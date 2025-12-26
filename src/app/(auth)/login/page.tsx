@@ -46,8 +46,8 @@ export default function LoginPage() {
 
       if (result.success) {
         toast.success("Welcome back!");
-        router.push(result.data.redirectTo || redirectTo);
-        router.refresh();
+        // Use hard redirect to ensure cookie is sent with the request
+        window.location.href = result.data.redirectTo || redirectTo;
       } else {
         toast.error(result.error || "Login failed");
       }

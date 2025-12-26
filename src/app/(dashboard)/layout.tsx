@@ -25,26 +25,24 @@ export default function DashboardLayout({
     setSidebarOpen(false);
   }, [pathname]);
 
-  // Show loading state while checking auth
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // If not authenticated, redirect to login
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      const currentPath = window.location.pathname;
+      const loginUrl = `/login${currentPath !== "/" ? `?redirect=${encodeURIComponent(currentPath)}` : ""}`;
+      window.location.href = loginUrl;
+    }
+  }, [isLoading, isAuthenticated]);
 
-  // If not authenticated, the middleware will redirect to login
-  // This is a fallback in case middleware doesn't catch it
-  if (!isAuthenticated) {
+  // Show loading state while checking auth or redirecting
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Redirecting to login...</p>
+          <p className="text-sm text-muted-foreground">
+            {isLoading ? "Loading..." : "Redirecting to login..."}
+          </p>
         </div>
       </div>
     );

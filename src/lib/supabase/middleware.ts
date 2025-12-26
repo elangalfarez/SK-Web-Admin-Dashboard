@@ -37,11 +37,28 @@ export async function createMiddlewareClient(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: DO NOT use getUser() here as it makes a network request
-  // Use getSession() instead which reads from cookies
+  // Check Supabase auth session
   const {
-    data: { session },
+    data: { session: supabaseSession },
   } = await supabase.auth.getSession();
+
+  // Also check for custom admin_session cookie (set by email/password login)
+  let customSession = null;
+  const adminSessionCookie = request.cookies.get("admin_session");
+  if (adminSessionCookie?.value) {
+    try {
+      const parsed = JSON.parse(adminSessionCookie.value);
+      // Check if session is not expired
+      if (parsed.expiresAt > Date.now()) {
+        customSession = parsed;
+      }
+    } catch {
+      // Invalid cookie format, ignore
+    }
+  }
+
+  // Session is valid if either Supabase session OR custom session exists
+  const session = supabaseSession || customSession;
 
   return { supabase, session, response: supabaseResponse };
 }
