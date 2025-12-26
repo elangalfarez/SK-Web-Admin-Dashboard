@@ -1,0 +1,696 @@
+/* src/app/globals.css */
+/* Created: Complete design system CSS variables for Supermal Karawaci Admin Dashboard */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   CSS CUSTOM PROPERTIES - DESIGN TOKENS
+   All colors use HSL format for easy manipulation
+   ============================================================================ */
+
+@layer base {
+  :root {
+    /* ========================================
+       LAYOUT DIMENSIONS
+       ======================================== */
+    --sidebar-width: 280px;
+    --sidebar-width-collapsed: 72px;
+    --header-height: 64px;
+    --radius: 0.625rem;
+    
+    /* ========================================
+       LIGHT MODE COLORS
+       Premium, clean aesthetic with gold accents
+       ======================================== */
+    
+    /* Base backgrounds */
+    --background: 0 0% 98%;           /* Near white */
+    --foreground: 240 10% 10%;        /* Almost black */
+    
+    /* Card surfaces */
+    --card: 0 0% 100%;                /* Pure white */
+    --card-foreground: 240 10% 10%;
+    
+    /* Popover/dropdown surfaces */
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+    
+    /* Primary brand color - Luxurious Gold */
+    --primary: 38 92% 50%;            /* Rich gold */
+    --primary-foreground: 0 0% 100%;
+    --primary-rgb: 242, 172, 13;      /* For glow effects */
+    
+    /* Secondary actions - Slate */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 9% 46%;
+    
+    /* Muted backgrounds */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    
+    /* Accent highlights */
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 9% 20%;
+    
+    /* Destructive/danger */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Borders and inputs */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 38 92% 50%;               /* Gold focus ring */
+    
+    /* ========================================
+       SIDEBAR COLORS (Light Mode)
+       Dark sidebar for professional contrast
+       ======================================== */
+    --sidebar: 220 20% 14%;           /* Dark navy */
+    --sidebar-foreground: 220 10% 90%;
+    --sidebar-accent: 220 20% 20%;
+    --sidebar-accent-foreground: 220 10% 95%;
+    --sidebar-border: 220 20% 22%;
+    --sidebar-ring: 38 92% 50%;
+    --sidebar-primary: 38 92% 50%;    /* Gold accent */
+    --sidebar-primary-foreground: 220 20% 14%;
+    
+    /* ========================================
+       STATUS COLORS
+       ======================================== */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+    
+    /* ========================================
+       CHART COLORS
+       For data visualization
+       ======================================== */
+    --chart-1: 38 92% 50%;            /* Gold */
+    --chart-2: 217 91% 60%;           /* Blue */
+    --chart-3: 142 76% 36%;           /* Green */
+    --chart-4: 280 68% 60%;           /* Purple */
+    --chart-5: 0 84% 60%;             /* Red */
+  }
+
+  /* ========================================
+     DARK MODE COLORS
+     Elegant dark theme with gold accents
+     ======================================== */
+  .dark {
+    /* Base backgrounds */
+    --background: 224 20% 8%;         /* Deep dark blue-gray */
+    --foreground: 0 0% 95%;
+    
+    /* Card surfaces */
+    --card: 224 20% 12%;
+    --card-foreground: 0 0% 95%;
+    
+    /* Popover/dropdown surfaces */
+    --popover: 224 20% 12%;
+    --popover-foreground: 0 0% 95%;
+    
+    /* Primary - Gold remains consistent */
+    --primary: 38 92% 50%;
+    --primary-foreground: 224 20% 8%;
+    
+    /* Secondary */
+    --secondary: 224 20% 18%;
+    --secondary-foreground: 0 0% 80%;
+    
+    /* Muted */
+    --muted: 224 20% 18%;
+    --muted-foreground: 0 0% 60%;
+    
+    /* Accent */
+    --accent: 224 20% 18%;
+    --accent-foreground: 0 0% 95%;
+    
+    /* Destructive */
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Borders and inputs */
+    --border: 224 20% 20%;
+    --input: 224 20% 20%;
+    --ring: 38 92% 50%;
+    
+    /* Sidebar - Slightly darker than background */
+    --sidebar: 224 20% 6%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-accent: 224 20% 12%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 224 20% 15%;
+    --sidebar-ring: 38 92% 50%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 224 20% 6%;
+    
+    /* Status colors - slightly adjusted for dark mode */
+    --success: 142 70% 45%;
+    --warning: 38 92% 50%;
+    --info: 217 91% 65%;
+    
+    /* Chart colors - slightly brighter for dark mode */
+    --chart-1: 38 92% 55%;
+    --chart-2: 217 91% 65%;
+    --chart-3: 142 70% 45%;
+    --chart-4: 280 68% 65%;
+    --chart-5: 0 74% 60%;
+  }
+}
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Improved focus states for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  
+  /* Remove default focus outline */
+  :focus:not(:focus-visible) {
+    @apply outline-none;
+  }
+  
+  /* Smooth transitions for theme changes */
+  * {
+    @apply transition-colors duration-200;
+  }
+  
+  /* Prevent transition on page load */
+  .no-transitions * {
+    transition: none !important;
+  }
+}
+
+/* ============================================================================
+   TYPOGRAPHY
+   ============================================================================ */
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+  
+  h1 {
+    @apply text-4xl font-bold;
+  }
+  
+  h2 {
+    @apply text-3xl font-semibold;
+  }
+  
+  h3 {
+    @apply text-2xl font-semibold;
+  }
+  
+  h4 {
+    @apply text-xl font-medium;
+  }
+  
+  h5 {
+    @apply text-lg font-medium;
+  }
+  
+  h6 {
+    @apply text-base font-medium;
+  }
+  
+  p {
+    @apply leading-relaxed;
+  }
+  
+  /* Code and pre elements */
+  code {
+    @apply font-mono text-sm bg-muted px-1.5 py-0.5 rounded;
+  }
+  
+  pre {
+    @apply font-mono text-sm bg-muted p-4 rounded-lg overflow-x-auto;
+  }
+  
+  pre code {
+    @apply bg-transparent p-0;
+  }
+}
+
+/* ============================================================================
+   SCROLLBAR STYLES
+   ============================================================================ */
+
+@layer utilities {
+  /* Custom scrollbar for webkit browsers */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   LOADING STATES
+   ============================================================================ */
+
+@layer utilities {
+  /* Shimmer effect for skeleton loading */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+  
+  /* Pulse loading effect */
+  .loading-pulse {
+    @apply animate-pulse-soft;
+  }
+  
+  /* Spinner utility */
+  .spinner {
+    @apply animate-spin rounded-full border-2 border-muted border-t-primary;
+  }
+}
+
+/* ============================================================================
+   GLASSMORPHISM EFFECTS
+   ============================================================================ */
+
+@layer utilities {
+  .glass {
+    @apply bg-background/80 backdrop-blur-md;
+  }
+  
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+  
+  .glass-sidebar {
+    @apply bg-sidebar/95 backdrop-blur-lg;
+  }
+}
+
+/* ============================================================================
+   FORM STYLES
+   ============================================================================ */
+
+@layer components {
+  /* Input focus glow effect */
+  .input-glow:focus-within {
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+  }
+  
+  /* Error state for inputs */
+  .input-error {
+    @apply border-destructive focus-within:ring-destructive;
+  }
+  
+  /* Success state for inputs */
+  .input-success {
+    @apply border-success focus-within:ring-success;
+  }
+}
+
+/* ============================================================================
+   TABLE STYLES
+   ============================================================================ */
+
+@layer components {
+  /* Striped table rows */
+  .table-striped tbody tr:nth-child(odd) {
+    @apply bg-muted/30;
+  }
+  
+  /* Hoverable table rows */
+  .table-hover tbody tr {
+    @apply transition-colors hover:bg-muted/50;
+  }
+}
+
+/* ============================================================================
+   ANIMATION UTILITIES
+   ============================================================================ */
+
+@layer utilities {
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  
+  /* Stagger animation delays */
+  .stagger-1 { animation-delay: 50ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 150ms; }
+  .stagger-4 { animation-delay: 200ms; }
+  .stagger-5 { animation-delay: 250ms; }
+  
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-transform duration-200;
+  }
+  
+  .hover-lift:hover {
+    @apply -translate-y-0.5;
+  }
+  
+  /* Scale on hover */
+  .hover-scale {
+    @apply transition-transform duration-200;
+  }
+  
+  .hover-scale:hover {
+    @apply scale-[1.02];
+  }
+  
+  /* Active press effect */
+  .active-press:active {
+    @apply scale-[0.98];
+  }
+}
+
+/* ============================================================================
+   SIDEBAR SPECIFIC STYLES
+   ============================================================================ */
+
+@layer components {
+  .sidebar-nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+           text-sidebar-foreground/80 transition-all duration-200
+           hover:bg-sidebar-accent hover:text-sidebar-foreground;
+  }
+  
+  .sidebar-nav-item.active {
+    @apply bg-sidebar-primary text-sidebar-primary-foreground;
+  }
+  
+  .sidebar-nav-item.active:hover {
+    @apply bg-sidebar-primary/90;
+  }
+  
+  .sidebar-section-title {
+    @apply px-3 py-2 text-xs font-semibold uppercase tracking-wider
+           text-sidebar-foreground/50;
+  }
+}
+
+/* ============================================================================
+   CARD VARIANTS
+   ============================================================================ */
+
+@layer components {
+  .card-interactive {
+    @apply transition-all duration-200 hover:shadow-soft-lg hover:-translate-y-0.5
+           cursor-pointer;
+  }
+  
+  .card-metric {
+    @apply bg-card border border-border rounded-xl p-6 
+           transition-all duration-200 hover:shadow-soft;
+  }
+  
+  .card-highlight {
+    @apply bg-gradient-to-br from-primary/10 to-primary/5 
+           border border-primary/20 rounded-xl;
+  }
+}
+
+/* ============================================================================
+   BADGE VARIANTS
+   ============================================================================ */
+
+@layer components {
+  .badge-status {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full 
+           text-xs font-medium;
+  }
+  
+  .badge-status-success {
+    @apply bg-success/10 text-success;
+  }
+  
+  .badge-status-warning {
+    @apply bg-warning/10 text-warning;
+  }
+  
+  .badge-status-error {
+    @apply bg-destructive/10 text-destructive;
+  }
+  
+  .badge-status-info {
+    @apply bg-info/10 text-info;
+  }
+  
+  .badge-status-muted {
+    @apply bg-muted text-muted-foreground;
+  }
+}
+
+/* ============================================================================
+   DATA TABLE STYLES
+   ============================================================================ */
+
+@layer components {
+  .data-table {
+    @apply w-full text-sm;
+  }
+  
+  .data-table thead {
+    @apply bg-muted/50;
+  }
+  
+  .data-table th {
+    @apply px-4 py-3 text-left font-medium text-muted-foreground
+           whitespace-nowrap;
+  }
+  
+  .data-table td {
+    @apply px-4 py-4 align-middle;
+  }
+  
+  .data-table tbody tr {
+    @apply border-b border-border transition-colors hover:bg-muted/30;
+  }
+  
+  .data-table tbody tr:last-child {
+    @apply border-b-0;
+  }
+}
+
+/* ============================================================================
+   RICH TEXT EDITOR STYLES
+   ============================================================================ */
+
+@layer components {
+  .prose-editor {
+    @apply prose prose-sm max-w-none dark:prose-invert;
+  }
+  
+  .prose-editor p {
+    @apply my-2;
+  }
+  
+  .prose-editor h1,
+  .prose-editor h2,
+  .prose-editor h3,
+  .prose-editor h4 {
+    @apply font-display;
+  }
+  
+  .prose-editor ul,
+  .prose-editor ol {
+    @apply my-2 pl-6;
+  }
+  
+  .prose-editor li {
+    @apply my-1;
+  }
+  
+  .prose-editor blockquote {
+    @apply border-l-4 border-primary pl-4 italic;
+  }
+  
+  .prose-editor a {
+    @apply text-primary underline decoration-primary/30 
+           hover:decoration-primary transition-colors;
+  }
+  
+  .prose-editor img {
+    @apply rounded-lg;
+  }
+  
+  .prose-editor code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+  
+  .prose-editor pre {
+    @apply bg-muted p-4 rounded-lg overflow-x-auto;
+  }
+  
+  .prose-editor pre code {
+    @apply bg-transparent p-0;
+  }
+}
+
+/* ============================================================================
+   EMPTY STATE STYLES
+   ============================================================================ */
+
+@layer components {
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-12 px-6 text-center;
+  }
+  
+  .empty-state-icon {
+    @apply w-16 h-16 text-muted-foreground/40 mb-4;
+  }
+  
+  .empty-state-title {
+    @apply text-lg font-medium text-foreground mb-2;
+  }
+  
+  .empty-state-description {
+    @apply text-sm text-muted-foreground max-w-sm mb-6;
+  }
+}
+
+/* ============================================================================
+   DRAG AND DROP STYLES
+   ============================================================================ */
+
+@layer components {
+  .sortable-item {
+    @apply relative bg-card border border-border rounded-lg p-4
+           transition-all duration-200;
+  }
+  
+  .sortable-item.dragging {
+    @apply shadow-lg scale-[1.02] opacity-90 z-10;
+  }
+  
+  .sortable-item .drag-handle {
+    @apply cursor-grab active:cursor-grabbing;
+  }
+  
+  .sortable-ghost {
+    @apply opacity-50 bg-muted border-dashed;
+  }
+}
+
+/* ============================================================================
+   PAGE LAYOUT UTILITIES
+   ============================================================================ */
+
+@layer utilities {
+  /* Page container */
+  .page-container {
+    @apply p-6 lg:p-8;
+  }
+  
+  /* Page header */
+  .page-header {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8;
+  }
+  
+  /* Page title */
+  .page-title {
+    @apply text-2xl font-display font-bold tracking-tight;
+  }
+  
+  /* Page description */
+  .page-description {
+    @apply text-muted-foreground mt-1;
+  }
+  
+  /* Content grid */
+  .content-grid {
+    @apply grid gap-6;
+  }
+  
+  .content-grid-2 {
+    @apply grid gap-6 md:grid-cols-2;
+  }
+  
+  .content-grid-3 {
+    @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  .content-grid-4 {
+    @apply grid gap-6 md:grid-cols-2 lg:grid-cols-4;
+  }
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .sidebar,
+  .header {
+    display: none !important;
+  }
+}
