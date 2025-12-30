@@ -4,7 +4,6 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   Pencil,
@@ -15,7 +14,6 @@ import {
   UtensilsCrossed,
   Calendar,
   Star,
-  Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -137,10 +135,6 @@ function RestaurantForm({
     onSubmit(data);
   };
 
-  const selectedRestaurant = restaurantOptions.find(
-    (r) => r.id === formData.tenant_id
-  );
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Restaurant Selection */}
@@ -228,14 +222,14 @@ function RestaurantForm({
       <div className="space-y-2">
         <Label>Featured Image</Label>
         <ImageUploader
-          value={formData.featured_image_url}
-          onChange={(url) =>
-            setFormData((prev) => ({ ...prev, featured_image_url: url }))
+          value={formData.featured_image_url ? [formData.featured_image_url] : []}
+          onChange={(urls) =>
+            setFormData((prev) => ({ ...prev, featured_image_url: urls[0] || "" }))
           }
-          bucket="homepage"
-          path="restaurants"
-          aspectRatio="video"
-          maxSize={2}
+          bucket="GENERAL"
+          folder="restaurants"
+          maxImages={1}
+          maxSize={2097152}
         />
         <p className="text-xs text-muted-foreground">
           Optional. Uses restaurant logo if not provided.
@@ -306,7 +300,6 @@ function RestaurantForm({
 // ============================================================================
 
 export function FeaturedRestaurantsManager() {
-  const router = useRouter();
   const [items, setItems] = useState<FeaturedRestaurantWithTenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();

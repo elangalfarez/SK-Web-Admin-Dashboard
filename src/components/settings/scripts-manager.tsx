@@ -4,7 +4,6 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   Pencil,
@@ -286,7 +285,6 @@ function ScriptForm({ script, onSubmit, onCancel, isPending }: ScriptFormProps) 
 // ============================================================================
 
 export function ScriptsManager() {
-  const router = useRouter();
   const [scripts, setScripts] = useState<SiteSetting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();

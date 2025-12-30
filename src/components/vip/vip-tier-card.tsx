@@ -15,7 +15,6 @@ import {
   Gift,
   Check,
   MoreHorizontal,
-  Sparkles,
   CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";

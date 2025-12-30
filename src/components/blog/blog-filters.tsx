@@ -157,10 +157,10 @@ export function BlogFilters() {
           {categories.map((category) => (
             <SelectItem key={category.id} value={category.id}>
               <span className="flex items-center gap-2">
-                {category.color && (
+                {category.accent_color && (
                   <span
                     className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: category.color }}
+                    style={{ backgroundColor: category.accent_color || undefined }}
                   />
                 )}
                 {category.name}

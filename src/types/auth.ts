@@ -1,7 +1,7 @@
 // src/types/auth.ts
 // Created: Authentication and authorization type definitions
 
-import type { AdminUser, AdminRole, AdminPermission } from "./database";
+import type { AdminRole } from "./database";
 
 // ============================================================================
 // USER ROLES
@@ -19,7 +19,7 @@ export interface UserRole {
   name: UserRoleName;
   display_name: string;
   description: string | null;
-  color: string;
+  color: string | null;
 }
 
 // ============================================================================

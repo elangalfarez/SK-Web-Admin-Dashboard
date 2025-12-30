@@ -4,7 +4,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { Upload, X, ImageIcon, Loader2, GripVertical } from "lucide-react";
+import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { uploadImage, deleteFileByUrl, type StorageBucket } from "@/lib/supabase/storage";

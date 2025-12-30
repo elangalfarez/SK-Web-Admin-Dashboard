@@ -9,7 +9,6 @@ import {
   Pencil,
   Trash2,
   Shield,
-  Users,
   Lock,
 } from "lucide-react";
 import { toast } from "sonner";

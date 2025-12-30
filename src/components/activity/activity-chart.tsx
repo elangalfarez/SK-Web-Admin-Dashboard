@@ -44,10 +44,9 @@ const moduleColors: Record<string, string> = {
 // ============================================================================
 
 export function ActivityChart({ data, title = "Activity (Last 14 Days)" }: ActivityChartProps) {
-  const { maxCount, chartData } = useMemo(() => {
+  const { chartData } = useMemo(() => {
     const max = Math.max(...data.map((d) => d.count), 1);
     return {
-      maxCount: max,
       chartData: data.map((d) => ({
         ...d,
         height: (d.count / max) * 100,
@@ -76,7 +75,7 @@ export function ActivityChart({ data, title = "Activity (Last 14 Days)" }: Activ
           <div className="space-y-2">
             {/* Chart */}
             <div className="flex h-32 items-end gap-1">
-              {chartData.map((item, index) => (
+              {chartData.map((item) => (
                 <div
                   key={item.date}
                   className="group relative flex flex-1 flex-col items-center"
@@ -119,11 +118,10 @@ export function ActivityChart({ data, title = "Activity (Last 14 Days)" }: Activ
 // ============================================================================
 
 export function ModuleChart({ data, title = "Activity by Module" }: ModuleChartProps) {
-  const { maxCount, chartData } = useMemo(() => {
+  const { chartData } = useMemo(() => {
     const max = Math.max(...data.map((d) => d.count), 1);
     const total = data.reduce((sum, d) => sum + d.count, 0);
     return {
-      maxCount: max,
       chartData: data.slice(0, 6).map((d) => ({
         ...d,
         width: (d.count / max) * 100,

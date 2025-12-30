@@ -11,10 +11,9 @@ import type {
   PermissionModule,
   PermissionAction,
   PermissionName,
-  Permission,
   UserRole,
 } from "@/types/auth";
-import type { AdminUser, AdminRole, AdminPermission } from "@/types/database";
+import type { AdminUser } from "@/types/database";
 
 // ============================================================================
 // AUTHENTICATION FUNCTIONS
@@ -215,8 +214,15 @@ export async function getAuthUserById(userId: string): Promise<AuthUser | null> 
       .eq("user_id", userId);
 
     const roles: UserRole[] = (userRoles || [])
-      .map((ur) => ur.role)
-      .filter((r): r is AdminRole => r !== null)
+      .map((ur) => {
+        // Handle Supabase join - role may be an object or array
+        const role = ur.role;
+        if (Array.isArray(role)) {
+          return role[0] || null;
+        }
+        return role;
+      })
+      .filter((r): r is { id: string; name: string; display_name: string; description: string | null; color: string | null } => r !== null && typeof r === 'object' && 'id' in r)
       .map((r) => ({
         id: r.id,
         name: r.name as UserRoleName,
@@ -239,7 +245,16 @@ export async function getAuthUserById(userId: string): Promise<AuthUser | null> 
 
     const permissionNames = new Set<PermissionName>(
       (rolePermissions || [])
-        .map((rp) => rp.permission?.name)
+        .map((rp) => {
+          // Handle Supabase join - permission may be an object or array
+          const permission = rp.permission;
+          if (Array.isArray(permission)) {
+            const perm = permission[0] as { name: string } | null;
+            return perm?.name;
+          }
+          const perm = permission as { name: string } | null;
+          return perm?.name;
+        })
         .filter((name): name is PermissionName => name !== null && name !== undefined)
     );
 

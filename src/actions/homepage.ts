@@ -15,9 +15,6 @@ import type {
   WhatsOnContentType,
   FeaturedRestaurant,
   Tenant,
-  Event,
-  Post,
-  Promotion,
 } from "@/types/database";
 
 // ============================================================================
@@ -78,13 +75,14 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
             .single();
 
           if (refData) {
-            // Normalize the data structure
+            // Normalize the data structure - cast to any since select columns vary by content type
+            const data = refData as Record<string, unknown>;
             reference_data = {
-              id: refData.id,
-              title: refData.title,
-              name: refData.name,
-              image_url: refData.image_url || refData.logo_url || (refData.images?.[0] ?? null),
-              logo_url: refData.logo_url,
+              id: data.id as string,
+              title: data.title as string | undefined,
+              name: data.name as string | undefined,
+              image_url: (data.image_url || data.logo_url || ((data.images as string[] | undefined)?.[0] ?? null)) as string | undefined,
+              logo_url: data.logo_url as string | undefined,
             };
           }
         }
@@ -136,13 +134,14 @@ export async function getWhatsOnItem(id: string): Promise<ActionResult<WhatsOnRe
           .single();
 
         if (refData) {
-          // Normalize the data structure
+          // Normalize the data structure - cast to any since select columns vary by content type
+          const data = refData as Record<string, unknown>;
           reference_data = {
-            id: refData.id,
-            title: refData.title,
-            name: refData.name,
-            image_url: refData.image_url || refData.logo_url || (refData.images?.[0] ?? null),
-            logo_url: refData.logo_url,
+            id: data.id as string,
+            title: data.title as string | undefined,
+            name: data.name as string | undefined,
+            image_url: (data.image_url || data.logo_url || ((data.images as string[] | undefined)?.[0] ?? null)) as string | undefined,
+            logo_url: data.logo_url as string | undefined,
           };
         }
       }

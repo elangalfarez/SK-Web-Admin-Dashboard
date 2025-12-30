@@ -10,7 +10,7 @@ import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
 import { createTenantSchema, updateTenantSchema, tenantCategorySchema, type TenantFilters } from "@/lib/validations/tenant";
 import type { ActionResult } from "@/lib/utils/api-helpers";
-import type { Tenant, TenantCategory, MallFloor, PaginatedResult, OperatingHours } from "@/types/database";
+import type { Tenant, TenantCategory, MallFloor, PaginatedResult } from "@/types/database";
 
 // ============================================================================
 // TENANT WITH CATEGORY TYPE

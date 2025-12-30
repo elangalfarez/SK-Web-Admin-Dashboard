@@ -5,9 +5,8 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, MapPin, Save, ArrowLeft, Eye } from "lucide-react";
+import { Calendar, Save, ArrowLeft, Eye, MapPin } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { generateSlug } from "@/lib/utils/slug";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

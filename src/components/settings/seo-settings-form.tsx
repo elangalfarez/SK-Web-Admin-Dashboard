@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUploader } from "@/components/shared/image-uploader";
+import { SingleImageUploader } from "@/components/shared/image-uploader";
 import { getSeoSettings, saveSeoSettings } from "@/actions/settings";
 import type { SeoSettings } from "@/lib/validations/settings";
 
@@ -54,7 +54,10 @@ export function SeoSettingsForm() {
   useEffect(() => {
     getSeoSettings().then((result) => {
       if (result.success) {
-        setFormData(result.data);
+        setFormData({
+          ...result.data,
+          twitter_card: result.data.twitter_card as "summary" | "summary_large_image",
+        });
       }
       setIsLoading(false);
     });
@@ -274,13 +277,13 @@ export function SeoSettingsForm() {
           {/* OG Image */}
           <div className="space-y-2">
             <Label>OG Image</Label>
-            <ImageUploader
-              value={formData.og_image_url}
-              onChange={(url) => updateField("og_image_url", url)}
-              bucket="settings"
-              path="og-images"
+            <SingleImageUploader
+              value={formData.og_image_url || null}
+              onChange={(url) => updateField("og_image_url", url || "")}
+              bucket="GENERAL"
+              folder="og-images"
               aspectRatio="video"
-              maxSize={2}
+              maxSize={2097152}
             />
             <p className="text-xs text-muted-foreground">
               Recommended: 1200×630 pixels for best display on social platforms
@@ -307,8 +310,8 @@ export function SeoSettingsForm() {
               <Label htmlFor="twitter_card">Card Type</Label>
               <Select
                 value={formData.twitter_card}
-                onValueChange={(value: "summary" | "summary_large_image") =>
-                  updateField("twitter_card", value)
+                onValueChange={(value) =>
+                  updateField("twitter_card", value as "summary" | "summary_large_image")
                 }
               >
                 <SelectTrigger>

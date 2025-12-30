@@ -12,7 +12,6 @@ import {
   Trash2,
   Eye,
   Star,
-  StarOff,
   Globe,
   GlobeLock,
   FileText,
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatDisplayDate, formatRelativeDate } from "@/lib/utils/format-date";
+import { formatRelativeDate } from "@/lib/utils/format-date";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -88,9 +87,9 @@ function PostRow({ post, onDelete }: PostRowProps) {
     >
       {/* Featured Image */}
       <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-lg bg-muted">
-        {post.featured_image ? (
+        {post.image_url ? (
           <img
-            src={post.featured_image}
+            src={post.image_url}
             alt={post.title}
             className="h-full w-full object-cover"
           />
@@ -116,9 +115,9 @@ function PostRow({ post, onDelete }: PostRowProps) {
             >
               {post.title}
             </Link>
-            {post.excerpt && (
+            {post.summary && (
               <p className="mt-1 text-sm text-muted-foreground line-clamp-1">
-                {post.excerpt}
+                {post.summary}
               </p>
             )}
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -128,8 +127,8 @@ function PostRow({ post, onDelete }: PostRowProps) {
                   <span
                     className="px-1.5 py-0.5 rounded text-xs"
                     style={{
-                      backgroundColor: post.category.color ? `${post.category.color}20` : undefined,
-                      color: post.category.color || undefined,
+                      backgroundColor: post.category.accent_color ? `${post.category.accent_color}20` : undefined,
+                      color: post.category.accent_color ?? undefined,
                     }}
                   >
                     {post.category.name}
@@ -138,9 +137,7 @@ function PostRow({ post, onDelete }: PostRowProps) {
               )}
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
-                {post.published_at
-                  ? formatRelativeDate(post.published_at)
-                  : formatRelativeDate(post.created_at)}
+                {formatRelativeDate(post.created_at)}
               </span>
             </div>
           </div>
