@@ -1,0 +1,42 @@
+# Netlify configuration for Supermal Karawaci Admin Dashboard
+# Next.js 15 with App Router
+
+[build]
+  # Build command
+  command = "npm run build"
+  # Publish directory (Next.js output)
+  publish = ".next"
+
+# Netlify Next.js Runtime (automatically handles SSR, API routes, etc.)
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Environment variables for build
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# Headers for security (mirrors next.config.js)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Redirects (optional - for SPA fallback if needed)
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200
+
+# Production context
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+# Preview/branch deploys
+[context.deploy-preview]
+  environment = { NODE_ENV = "production" }
+
+[context.branch-deploy]
+  environment = { NODE_ENV = "production" }
