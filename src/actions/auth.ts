@@ -47,10 +47,12 @@ export async function loginWithPassword(
 
     // Create a session using Supabase Auth
     // We sign in with the admin user's email to create a session
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    // Note: signInWithPassword may fail if user doesn't exist in auth.users,
+    // but we can still authenticate via admin_users table below
+    await supabase.auth.signInWithPassword({
       email: email.toLowerCase().trim(),
       password: password,
-    });
+    }).catch(() => { /* Ignore error - we handle auth via admin_users table */ });
 
     // If Supabase Auth fails (user might not exist in auth.users),
     // we can still authenticate via admin_users table

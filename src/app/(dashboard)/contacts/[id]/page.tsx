@@ -9,14 +9,10 @@ import {
   Mail,
   MailOpen,
   Phone,
-  Calendar,
   MessageSquare,
   User,
-  Clock,
-  Trash2,
   ExternalLink,
 } from "lucide-react";
-import { PageHeader } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -159,9 +155,7 @@ export default async function ContactDetailPage({
                     </span>
                   </p>
                   <p>
-                    {formatDate(contact.admin_response.responded_at, {
-                      includeTime: true,
-                    })}
+                    {formatDate(contact.admin_response.responded_at, true)}
                   </p>
                 </div>
               </CardContent>
@@ -254,7 +248,7 @@ export default async function ContactDetailPage({
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Submitted</span>
                 <span>
-                  {formatDate(contact.submitted_date, { includeTime: true })}
+                  {formatDate(contact.submitted_date, true)}
                 </span>
               </div>
               <div className="flex justify-between">

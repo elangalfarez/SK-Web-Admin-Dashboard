@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Save, ArrowLeft, Eye, Store, Building2, Phone, FolderOpen, Sparkles, Star } from "lucide-react";
+import { Save, ArrowLeft, Eye, Store, Building2, Phone, FolderOpen, Star } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ import { SingleImageUploader } from "@/components/shared/image-uploader";
 import { OperatingHoursEditor } from "./operating-hours-editor";
 import { createTenant, updateTenant, getTenantCategories, getMallFloors } from "@/actions/tenants";
 import type { TenantWithCategory } from "@/actions/tenants";
-import type { TenantCategory, MallFloor, OperatingHours } from "@/types/database";
+import type { TenantCategory, OperatingHours, MallFloor } from "@/types/database";
 
 // ============================================================================
 // TYPES
@@ -448,7 +448,7 @@ export function TenantForm({ tenant, mode }: TenantFormProps) {
               {/* New tenant toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-info" />
+                  <Store className="h-4 w-4 text-info" />
                   <div>
                     <Label htmlFor="is_new_tenant">New Tenant</Label>
                     <p className="text-sm text-muted-foreground">

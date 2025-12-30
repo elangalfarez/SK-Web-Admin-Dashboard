@@ -5,12 +5,10 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Gift, GripVertical, Save, Check, MoveUp, MoveDown } from "lucide-react";
+import { Trash2, Gift, GripVertical, Save, Check, MoveUp, MoveDown } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,

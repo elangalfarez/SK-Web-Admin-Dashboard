@@ -4,7 +4,6 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   Pencil,
@@ -17,7 +16,6 @@ import {
   FileText,
   Percent,
   Sparkles,
-  ExternalLink,
   Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -265,14 +263,14 @@ function ItemForm({ item, onSubmit, onCancel, isPending }: ItemFormProps) {
           <div className="space-y-2">
             <Label>Image</Label>
             <ImageUploader
-              value={formData.custom_image_url}
-              onChange={(url) =>
-                setFormData((prev) => ({ ...prev, custom_image_url: url }))
+              value={formData.custom_image_url ? [formData.custom_image_url] : []}
+              onChange={(urls) =>
+                setFormData((prev) => ({ ...prev, custom_image_url: urls[0] || "" }))
               }
-              bucket="homepage"
-              path="whats-on"
-              aspectRatio="video"
-              maxSize={2}
+              bucket="GENERAL"
+              folder="whats-on"
+              maxImages={1}
+              maxSize={2097152}
             />
           </div>
 
@@ -355,7 +353,6 @@ function ItemForm({ item, onSubmit, onCancel, isPending }: ItemFormProps) {
 // ============================================================================
 
 export function WhatsOnManager() {
-  const router = useRouter();
   const [items, setItems] = useState<WhatsOnResolved[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();

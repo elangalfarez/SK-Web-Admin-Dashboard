@@ -17,7 +17,6 @@ import {
   Settings,
   Mail,
   Users,
-  Shield,
   CreditCard,
   Activity,
   ChevronLeft,
@@ -33,7 +32,6 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useTheme } from "@/components/providers/theme-provider";
 import { logout } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
-import { NAVIGATION } from "@/lib/constants";
 
 // ============================================================================
 // NAVIGATION ITEMS

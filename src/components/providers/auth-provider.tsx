@@ -12,7 +12,7 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type {
   AuthUser,
@@ -44,7 +44,6 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
   const [user, setUser] = useState<AuthUser | null>(initialUser);
   const [isLoading, setIsLoading] = useState(!initialUser);
   const router = useRouter();
-  const pathname = usePathname();
 
   // Fetch user data from admin_users table
   const fetchUser = useCallback(async (userId: string): Promise<AuthUser | null> => {
@@ -78,8 +77,15 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
         .eq("user_id", userId);
 
       const roles: UserRole[] = (userRoles || [])
-        .map((ur) => ur.role)
-        .filter((r): r is NonNullable<typeof r> => r !== null)
+        .map((ur) => {
+          // Handle Supabase join - role may be an object or array
+          const role = ur.role;
+          if (Array.isArray(role)) {
+            return role[0] || null;
+          }
+          return role;
+        })
+        .filter((role): role is { id: string; name: string; display_name: string; description: string | null; color: string | null } => role !== null && typeof role === 'object' && 'id' in role)
         .map((r) => ({
           id: r.id,
           name: r.name as UserRoleName,
@@ -105,7 +111,16 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
 
         permissionNames = new Set<PermissionName>(
           (rolePermissions || [])
-            .map((rp) => rp.permission?.name)
+            .map((rp) => {
+              // Handle Supabase join - permission may be an object or array
+              const permission = rp.permission;
+              if (Array.isArray(permission)) {
+                return permission[0] || null;
+              }
+              return permission;
+            })
+            .filter((permission): permission is { name: string } => permission !== null && typeof permission === 'object' && 'name' in permission)
+            .map((p) => p.name)
             .filter((name): name is PermissionName => name !== null && name !== undefined)
         );
       }
