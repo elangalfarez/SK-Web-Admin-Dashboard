@@ -4,7 +4,6 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   Pencil,
@@ -17,7 +16,6 @@ import {
   FileText,
   Percent,
   Sparkles,
-  ExternalLink,
   Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -44,7 +42,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUploader } from "@/components/shared/image-uploader";
+import { SingleImageUploader } from "@/components/shared/image-uploader";
 import {
   getWhatsOnItems,
   createWhatsOnItem,
@@ -264,15 +262,15 @@ function ItemForm({ item, onSubmit, onCancel, isPending }: ItemFormProps) {
 
           <div className="space-y-2">
             <Label>Image</Label>
-            <ImageUploader
-              value={formData.custom_image_url}
+            <SingleImageUploader
+              value={formData.custom_image_url || null}
               onChange={(url) =>
-                setFormData((prev) => ({ ...prev, custom_image_url: url }))
+                setFormData((prev) => ({ ...prev, custom_image_url: url || "" }))
               }
               bucket="homepage"
-              path="whats-on"
+              folder="whats-on"
               aspectRatio="video"
-              maxSize={2}
+              maxSize={2 * 1024 * 1024}
             />
           </div>
 
@@ -355,7 +353,6 @@ function ItemForm({ item, onSubmit, onCancel, isPending }: ItemFormProps) {
 // ============================================================================
 
 export function WhatsOnManager() {
-  const router = useRouter();
   const [items, setItems] = useState<WhatsOnResolved[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();

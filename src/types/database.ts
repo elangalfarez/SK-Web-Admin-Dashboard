@@ -167,6 +167,8 @@ export interface BlogCategory {
   slug: string;
   description: string | null;
   accent_color: string | null;
+  /** @deprecated Use accent_color instead */
+  color?: string | null;
   is_active: boolean;
   sort_order: number;
   created_at: string;
@@ -181,13 +183,25 @@ export interface Post {
   title: string;
   slug: string;
   summary: string | null;
+  /** Alias for summary for compatibility */
+  excerpt?: string | null;
   body_html: string | null;
+  /** Alias for body_html for compatibility */
+  body?: string | null;
   category_id: string | null;
   tags: string[];
   is_published: boolean;
   is_featured: boolean;
   publish_at: string | null;
+  /** Alias for publish_at for compatibility */
+  published_at?: string | null;
   image_url: string | null;
+  /** Alias for image_url for compatibility */
+  featured_image?: string | null;
+  /** SEO meta title */
+  meta_title?: string | null;
+  /** SEO meta description */
+  meta_description?: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

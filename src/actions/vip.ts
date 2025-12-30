@@ -10,7 +10,7 @@ import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
 import { vipTierSchema, vipBenefitSchema, updateTierBenefitsSchema } from "@/lib/validations/vip";
 import type { ActionResult } from "@/lib/utils/api-helpers";
-import type { VipTier, VipBenefit, VipTierBenefit, VipTierWithBenefits } from "@/types/database";
+import type { VipTier, VipBenefit, VipTierWithBenefits } from "@/types/database";
 
 // ============================================================================
 // GET VIP TIERS

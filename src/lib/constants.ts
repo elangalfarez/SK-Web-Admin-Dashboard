@@ -66,6 +66,8 @@ export const STORAGE_BUCKETS = {
   TENANTS: "tenants",
   AVATARS: "avatars",
   GENERAL: "general",
+  SETTINGS: "settings",
+  HOMEPAGE: "homepage",
 } as const;
 
 /**

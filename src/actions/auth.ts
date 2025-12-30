@@ -47,7 +47,7 @@ export async function loginWithPassword(
 
     // Create a session using Supabase Auth
     // We sign in with the admin user's email to create a session
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    await supabase.auth.signInWithPassword({
       email: email.toLowerCase().trim(),
       password: password,
     });

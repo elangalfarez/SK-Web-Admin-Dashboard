@@ -17,7 +17,7 @@ import {
   endOfDay,
 } from "date-fns";
 import { id as localeID } from "date-fns/locale";
-import { DATE_FORMATS, TIMEZONE } from "@/lib/constants";
+import { DATE_FORMATS } from "@/lib/constants";
 
 /**
  * Parse a date string or Date object into a valid Date
@@ -249,10 +249,13 @@ export function formatTime(
  */
 export function formatDate(
   date: string | Date | null | undefined,
-  includeTime: boolean = false
+  includeTimeOrOptions: boolean | { includeTime?: boolean } = false
 ): string {
   const parsed = parseDate(date);
   if (!parsed) return "-";
+  const includeTime = typeof includeTimeOrOptions === 'boolean'
+    ? includeTimeOrOptions
+    : includeTimeOrOptions?.includeTime ?? false;
   return format(parsed, includeTime ? DATE_FORMATS.DISPLAY_WITH_TIME : DATE_FORMATS.DISPLAY);
 }
 

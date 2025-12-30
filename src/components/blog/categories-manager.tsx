@@ -4,7 +4,6 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, FolderOpen, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -193,7 +192,6 @@ function CategoryForm({ category, onSubmit, onCancel, isPending }: CategoryFormP
 // ============================================================================
 
 export function CategoriesManager() {
-  const router = useRouter();
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();

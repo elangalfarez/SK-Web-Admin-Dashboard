@@ -146,7 +146,7 @@ export function OperatingHoursEditor({
       </div>
 
       <div className="space-y-2">
-        {entries.map((entry, index) => (
+        {entries.map((entry, _index) => (
           <div
             key={entry.id}
             className={cn(

@@ -10,6 +10,18 @@ import { STORAGE_BUCKETS, UPLOAD } from "@/lib/constants";
 
 export type StorageBucket = keyof typeof STORAGE_BUCKETS;
 
+// Lowercase bucket name aliases for convenience
+export type StorageBucketLower = "events" | "posts" | "promotions" | "tenants" | "avatars" | "general" | "settings" | "homepage";
+
+// Map lowercase to uppercase bucket names
+export function normalizeBucket(bucket: StorageBucket | StorageBucketLower): StorageBucket {
+  const upperBucket = bucket.toUpperCase() as StorageBucket;
+  if (upperBucket in STORAGE_BUCKETS) {
+    return upperBucket;
+  }
+  return bucket as StorageBucket;
+}
+
 export interface UploadResult {
   success: boolean;
   url?: string;
