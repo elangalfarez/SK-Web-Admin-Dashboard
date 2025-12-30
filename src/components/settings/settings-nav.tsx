@@ -12,7 +12,6 @@ import {
   Search,
   BarChart3,
   Code,
-  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

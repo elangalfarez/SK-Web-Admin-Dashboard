@@ -5,7 +5,7 @@
 
 import { useCallback, useTransition, useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Search, X, Store, Calendar } from "lucide-react";
+import { Search, X, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {

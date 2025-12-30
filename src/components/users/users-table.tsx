@@ -4,7 +4,6 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   Pencil,
@@ -17,10 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
-  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,7 +59,6 @@ const defaultFilters: UsersFiltersState = {
 // ============================================================================
 
 export function UsersTable() {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [filters, setFilters] = useState<UsersFiltersState>(defaultFilters);
   const [page, setPage] = useState(1);

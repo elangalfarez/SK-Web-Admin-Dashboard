@@ -20,7 +20,6 @@ import type {
   AdminUser,
   AdminRole,
   AdminPermission,
-  AdminUserRole,
   PaginatedResult,
 } from "@/types/database";
 

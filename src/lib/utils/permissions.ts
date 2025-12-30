@@ -9,7 +9,7 @@ import type {
   UserRoleName,
   PermissionCheck,
 } from "@/types/auth";
-import { ROLES, PERMISSION_MODULES, PERMISSION_ACTIONS } from "@/lib/constants";
+import { ROLES, PERMISSION_MODULES } from "@/lib/constants";
 
 // ============================================================================
 // PERMISSION DEFINITIONS

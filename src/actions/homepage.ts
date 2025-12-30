@@ -15,9 +15,6 @@ import type {
   WhatsOnContentType,
   FeaturedRestaurant,
   Tenant,
-  Event,
-  Post,
-  Promotion,
 } from "@/types/database";
 
 // ============================================================================
@@ -78,13 +75,14 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
             .single();
 
           if (refData) {
-            // Normalize the data structure
+            // Normalize the data structure - cast to any for dynamic property access
+            const ref = refData as Record<string, unknown>;
             reference_data = {
-              id: refData.id,
-              title: refData.title,
-              name: refData.name,
-              image_url: refData.image_url || refData.logo_url || (refData.images?.[0] ?? null),
-              logo_url: refData.logo_url,
+              id: ref.id as string,
+              title: (ref.title as string) || undefined,
+              name: (ref.name as string) || undefined,
+              image_url: (ref.image_url as string) || (ref.logo_url as string) || ((ref.images as string[])?.[0] ?? null),
+              logo_url: (ref.logo_url as string) || undefined,
             };
           }
         }
@@ -136,13 +134,14 @@ export async function getWhatsOnItem(id: string): Promise<ActionResult<WhatsOnRe
           .single();
 
         if (refData) {
-          // Normalize the data structure
+          // Normalize the data structure - cast to any for dynamic property access
+          const ref = refData as Record<string, unknown>;
           reference_data = {
-            id: refData.id,
-            title: refData.title,
-            name: refData.name,
-            image_url: refData.image_url || refData.logo_url || (refData.images?.[0] ?? null),
-            logo_url: refData.logo_url,
+            id: ref.id as string,
+            title: (ref.title as string) || undefined,
+            name: (ref.name as string) || undefined,
+            image_url: (ref.image_url as string) || (ref.logo_url as string) || ((ref.images as string[])?.[0] ?? null),
+            logo_url: (ref.logo_url as string) || undefined,
           };
         }
       }

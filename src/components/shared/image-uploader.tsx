@@ -4,11 +4,14 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { Upload, X, ImageIcon, Loader2, GripVertical } from "lucide-react";
+import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { uploadImage, deleteFileByUrl, type StorageBucket } from "@/lib/supabase/storage";
+import { uploadImage, deleteFileByUrl, normalizeBucket, type StorageBucket, type StorageBucketLower } from "@/lib/supabase/storage";
 import { UPLOAD } from "@/lib/constants";
+
+// Allow either uppercase or lowercase bucket names
+type BucketProp = StorageBucket | StorageBucketLower;
 
 // ============================================================================
 // TYPES
@@ -17,7 +20,7 @@ import { UPLOAD } from "@/lib/constants";
 interface ImageUploaderProps {
   value: string[];
   onChange: (urls: string[]) => void;
-  bucket: StorageBucket;
+  bucket: BucketProp;
   folder?: string;
   maxImages?: number;
   maxSize?: number;
@@ -91,7 +94,7 @@ export function ImageUploader({
       // Upload files
       const uploadPromises = newUploading.map(async (item) => {
         try {
-          const result = await uploadImage(item.file, { bucket, folder });
+          const result = await uploadImage(item.file, { bucket: normalizeBucket(bucket), folder });
           
           if (result.success && result.url) {
             return result.url;
@@ -161,7 +164,7 @@ export function ImageUploader({
 
     // Delete from storage in background
     try {
-      await deleteFileByUrl(bucket, url);
+      await deleteFileByUrl(normalizeBucket(bucket), url);
     } catch (err) {
       console.error("Failed to delete image:", err);
     }
@@ -292,9 +295,9 @@ export function ImageUploader({
 // ============================================================================
 
 interface SingleImageUploaderProps {
-  value: string | null;
+  value: string | null | undefined;
   onChange: (url: string | null) => void;
-  bucket: StorageBucket;
+  bucket: BucketProp;
   folder?: string;
   maxSize?: number;
   aspectRatio?: "square" | "video" | "banner";
@@ -340,12 +343,12 @@ export function SingleImageUploader({
     setIsUploading(true);
 
     try {
-      const result = await uploadImage(file, { bucket, folder });
-      
+      const result = await uploadImage(file, { bucket: normalizeBucket(bucket), folder });
+
       if (result.success && result.url) {
         // Delete old image if exists
         if (value) {
-          await deleteFileByUrl(bucket, value).catch(() => {});
+          await deleteFileByUrl(normalizeBucket(bucket), value).catch(() => {});
         }
         onChange(result.url);
       } else {
@@ -361,7 +364,7 @@ export function SingleImageUploader({
   const handleRemove = async () => {
     if (value) {
       onChange(null);
-      await deleteFileByUrl(bucket, value).catch(() => {});
+      await deleteFileByUrl(normalizeBucket(bucket), value).catch(() => {});
     }
   };
 

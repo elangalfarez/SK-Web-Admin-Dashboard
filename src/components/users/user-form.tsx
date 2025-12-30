@@ -4,7 +4,7 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import { User, Mail, Shield, Check } from "lucide-react";
+import { User, Mail, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DialogFooter } from "@/components/ui/dialog";
-import { ImageUploader } from "@/components/shared/image-uploader";
+import { SingleImageUploader } from "@/components/shared/image-uploader";
 import { createUser, updateUser, getRoles } from "@/actions/users";
 import type { UserWithRoles } from "@/actions/users";
 import type { AdminRole } from "@/types/database";
@@ -156,15 +156,15 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       {isEditing && (
         <div className="space-y-2">
           <Label>Avatar</Label>
-          <ImageUploader
-            value={formData.avatar_url}
+          <SingleImageUploader
+            value={formData.avatar_url || null}
             onChange={(url) =>
-              setFormData((prev) => ({ ...prev, avatar_url: url }))
+              setFormData((prev) => ({ ...prev, avatar_url: url || "" }))
             }
             bucket="avatars"
-            path="admin"
+            folder="admin"
             aspectRatio="square"
-            maxSize={1}
+            maxSize={1024 * 1024}
           />
         </div>
       )}
