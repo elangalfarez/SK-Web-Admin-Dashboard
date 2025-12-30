@@ -2,8 +2,8 @@
 # Next.js 15 with App Router
 
 [build]
-  # Build command
-  command = "npm run build"
+  # Clear stale Next.js cache before building to prevent cache-related failures
+  command = "rm -rf .next/cache && npm run build"
   # Publish directory (Next.js output)
   publish = ".next"
 
@@ -15,6 +15,8 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
+  # Ensure npm installs all dependencies needed for build
+  NPM_CONFIG_PRODUCTION = "false"
 
 # Headers for security (mirrors next.config.js)
 [[headers]]
