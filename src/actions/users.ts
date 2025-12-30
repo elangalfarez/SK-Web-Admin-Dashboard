@@ -89,7 +89,7 @@ export async function getUsers(
     const { data: users, error, count } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Fetch roles for each user
@@ -151,7 +151,7 @@ export async function getUser(id: string): Promise<ActionResult<UserWithRoles>> 
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Fetch user roles
@@ -232,7 +232,7 @@ export async function createUser(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Assign roles
@@ -335,7 +335,7 @@ export async function updateUser(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Update roles - remove existing and add new
@@ -405,7 +405,7 @@ export async function deleteUser(id: string): Promise<ActionResult<void>> {
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -456,7 +456,7 @@ export async function toggleUserStatus(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     revalidatePath("/users");
@@ -512,7 +512,7 @@ export async function resetUserPassword(
       .eq("id", userId);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -597,7 +597,7 @@ export async function changePassword(
       .eq("id", session.userId);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -628,7 +628,7 @@ export async function getRoles(): Promise<ActionResult<AdminRole[]>> {
       .order("sort_order", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);
@@ -653,7 +653,7 @@ export async function getRole(id: string): Promise<ActionResult<RoleWithPermissi
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Fetch role permissions
@@ -691,7 +691,7 @@ export async function getPermissions(): Promise<ActionResult<AdminPermission[]>>
       .order("action", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);
@@ -770,7 +770,7 @@ export async function createRole(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Assign permissions
@@ -866,7 +866,7 @@ export async function updateRole(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Update permissions - remove existing and add new
@@ -940,7 +940,7 @@ export async function deleteRole(id: string): Promise<ActionResult<void>> {
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -993,7 +993,7 @@ export async function updateOwnProfile(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -1086,7 +1086,7 @@ export async function changeOwnPassword(
       .eq("id", session.userId);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity

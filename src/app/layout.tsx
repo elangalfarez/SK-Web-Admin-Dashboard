@@ -56,6 +56,38 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Inline styles for initial loading state (shows before JS loads) */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              #initial-loader {
+                position: fixed;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--bg-color, #fafafa);
+                z-index: 9999;
+                transition: opacity 0.3s ease-out;
+              }
+              .dark #initial-loader { --bg-color: #0f1117; }
+              #initial-loader.hidden { opacity: 0; pointer-events: none; }
+              #initial-loader .spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid #e5e7eb;
+                border-top-color: #6366f1;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+              }
+              .dark #initial-loader .spinner {
+                border-color: #374151;
+                border-top-color: #818cf8;
+              }
+              @keyframes spin { to { transform: rotate(360deg); } }
+            `,
+          }}
+        />
         {/* Prevent FOUC by setting initial theme before render */}
         <script
           dangerouslySetInnerHTML={{
@@ -75,6 +107,26 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
+        {/* Initial loader - hidden once React hydrates */}
+        <div id="initial-loader">
+          <div className="spinner" />
+        </div>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Hide loader when page is interactive
+              if (document.readyState === 'complete') {
+                document.getElementById('initial-loader')?.classList.add('hidden');
+              } else {
+                window.addEventListener('load', function() {
+                  setTimeout(function() {
+                    document.getElementById('initial-loader')?.classList.add('hidden');
+                  }, 100);
+                });
+              }
+            `,
+          }}
+        />
         <ThemeProvider defaultTheme="system">
           <AuthProvider>
             {children}

@@ -26,7 +26,7 @@ export async function getVipTiers(): Promise<ActionResult<VipTier[]>> {
       .order("tier_level", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);
@@ -52,7 +52,7 @@ export async function getVipTier(id: string): Promise<ActionResult<VipTierWithBe
       .single();
 
     if (tierError) {
-      return errorResponse(handleSupabaseError(tierError));
+      return handleSupabaseError(tierError);
     }
 
     // Get tier benefits with benefit details
@@ -104,7 +104,7 @@ export async function getVipTiersWithBenefits(): Promise<ActionResult<VipTierWit
       .order("tier_level", { ascending: true });
 
     if (tiersError) {
-      return errorResponse(handleSupabaseError(tiersError));
+      return handleSupabaseError(tiersError);
     }
 
     // Get all tier benefits
@@ -212,7 +212,7 @@ export async function createVipTier(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -302,7 +302,7 @@ export async function updateVipTier(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -349,7 +349,7 @@ export async function deleteVipTier(id: string): Promise<ActionResult<void>> {
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -382,7 +382,7 @@ export async function getVipBenefits(): Promise<ActionResult<VipBenefit[]>> {
       .order("sort_order", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);
@@ -438,7 +438,7 @@ export async function createVipBenefit(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -507,7 +507,7 @@ export async function updateVipBenefit(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -564,7 +564,7 @@ export async function deleteVipBenefit(id: string): Promise<ActionResult<void>> 
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -618,7 +618,7 @@ export async function updateTierBenefits(
       .eq("tier_id", tierId);
 
     if (deleteError) {
-      return errorResponse(handleSupabaseError(deleteError));
+      return handleSupabaseError(deleteError);
     }
 
     // Insert new tier benefits
@@ -635,7 +635,7 @@ export async function updateTierBenefits(
         .insert(tierBenefits);
 
       if (insertError) {
-        return errorResponse(handleSupabaseError(insertError));
+        return handleSupabaseError(insertError);
       }
     }
 
@@ -683,7 +683,7 @@ export async function toggleVipTierStatus(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity

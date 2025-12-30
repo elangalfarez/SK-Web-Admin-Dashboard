@@ -52,28 +52,44 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
       .order("sort_order", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Resolve reference data for each item
     const resolvedItems: WhatsOnResolved[] = [];
-    
+
     for (const item of data || []) {
       let reference_data = null;
-      
+
       if (item.reference_id && item.content_type !== "custom") {
         const table = getTableForContentType(item.content_type);
         if (table) {
+          // Select correct columns based on content type
+          const selectCols = item.content_type === "event"
+            ? "id, title, images"
+            : item.content_type === "tenant"
+            ? "id, name, logo_url"
+            : "id, title, image_url";
+
           const { data: refData } = await supabase
             .from(table)
-            .select("id, title, name, image_url, logo_url")
+            .select(selectCols)
             .eq("id", item.reference_id)
             .single();
-          
-          reference_data = refData;
+
+          if (refData) {
+            // Normalize the data structure
+            reference_data = {
+              id: refData.id,
+              title: refData.title,
+              name: refData.name,
+              image_url: refData.image_url || refData.logo_url || (refData.images?.[0] ?? null),
+              logo_url: refData.logo_url,
+            };
+          }
         }
       }
-      
+
       resolvedItems.push({ ...item, reference_data });
     }
 
@@ -99,20 +115,36 @@ export async function getWhatsOnItem(id: string): Promise<ActionResult<WhatsOnRe
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     let reference_data = null;
     if (data.reference_id && data.content_type !== "custom") {
       const table = getTableForContentType(data.content_type);
       if (table) {
+        // Select correct columns based on content type
+        const selectCols = data.content_type === "event"
+          ? "id, title, images"
+          : data.content_type === "tenant"
+          ? "id, name, logo_url"
+          : "id, title, image_url";
+
         const { data: refData } = await supabase
           .from(table)
-          .select("id, title, name, image_url, logo_url")
+          .select(selectCols)
           .eq("id", data.reference_id)
           .single();
-        
-        reference_data = refData;
+
+        if (refData) {
+          // Normalize the data structure
+          reference_data = {
+            id: refData.id,
+            title: refData.title,
+            name: refData.name,
+            image_url: refData.image_url || refData.logo_url || (refData.images?.[0] ?? null),
+            logo_url: refData.logo_url,
+          };
+        }
       }
     }
 
@@ -171,7 +203,7 @@ export async function createWhatsOnItem(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -241,7 +273,7 @@ export async function updateWhatsOnItem(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -292,7 +324,7 @@ export async function deleteWhatsOnItem(id: string): Promise<ActionResult<void>>
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -335,7 +367,7 @@ export async function reorderWhatsOnItems(
         .eq("id", item.id);
 
       if (error) {
-        return errorResponse(handleSupabaseError(error));
+        return handleSupabaseError(error);
       }
     }
 
@@ -376,7 +408,7 @@ export async function toggleWhatsOnStatus(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     revalidatePath("/homepage");
@@ -397,24 +429,41 @@ export async function getFeaturedRestaurants(): Promise<ActionResult<FeaturedRes
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // Fetch featured restaurants without join (no FK relationship may exist)
+    const { data: restaurants, error } = await supabase
       .from("featured_restaurants")
-      .select(`
-        *,
-        tenant:tenants!tenant_id (
-          id,
-          name,
-          logo_url,
-          category_id
-        )
-      `)
+      .select("*")
       .order("sort_order", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
-    return successResponse(data || []);
+    // Fetch tenants separately
+    const tenantIds = [...new Set((restaurants || []).map(r => r.tenant_id).filter(Boolean))];
+    let tenantsMap: Record<string, { id: string; name: string; logo_url: string | null; category_id: string | null }> = {};
+
+    if (tenantIds.length > 0) {
+      const { data: tenants } = await supabase
+        .from("tenants")
+        .select("id, name, logo_url, category_id")
+        .in("id", tenantIds);
+
+      if (tenants) {
+        tenantsMap = tenants.reduce((acc, tenant) => {
+          acc[tenant.id] = tenant;
+          return acc;
+        }, {} as typeof tenantsMap);
+      }
+    }
+
+    // Merge with tenant data
+    const restaurantsWithTenant: FeaturedRestaurantWithTenant[] = (restaurants || []).map(restaurant => ({
+      ...restaurant,
+      tenant: restaurant.tenant_id ? tenantsMap[restaurant.tenant_id] || null : null,
+    }));
+
+    return successResponse(restaurantsWithTenant);
   } catch (error) {
     console.error("Get featured restaurants error:", error);
     return errorResponse("Failed to fetch featured restaurants");
@@ -431,25 +480,33 @@ export async function getFeaturedRestaurant(
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // Fetch featured restaurant without join (no FK relationship may exist)
+    const { data: restaurant, error } = await supabase
       .from("featured_restaurants")
-      .select(`
-        *,
-        tenant:tenants!tenant_id (
-          id,
-          name,
-          logo_url,
-          category_id
-        )
-      `)
+      .select("*")
       .eq("id", id)
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
-    return successResponse(data);
+    // Fetch tenant separately
+    let tenant: { id: string; name: string; logo_url: string | null; category_id: string | null } | null = null;
+    if (restaurant.tenant_id) {
+      const { data: tenantData } = await supabase
+        .from("tenants")
+        .select("id, name, logo_url, category_id")
+        .eq("id", restaurant.tenant_id)
+        .single();
+
+      tenant = tenantData;
+    }
+
+    return successResponse({
+      ...restaurant,
+      tenant,
+    } as FeaturedRestaurantWithTenant);
   } catch (error) {
     console.error("Get featured restaurant error:", error);
     return errorResponse("Failed to fetch featured restaurant");
@@ -513,7 +570,7 @@ export async function createFeaturedRestaurant(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Get tenant name for logging
@@ -607,7 +664,7 @@ export async function updateFeaturedRestaurant(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Get tenant name for logging
@@ -647,18 +704,26 @@ export async function deleteFeaturedRestaurant(id: string): Promise<ActionResult
 
     const supabase = await createAdminClient();
 
-    // Get item for logging
+    // Get item for logging (without join)
     const { data: item } = await supabase
       .from("featured_restaurants")
-      .select(`
-        tenant_id,
-        tenant:tenants!tenant_id (name)
-      `)
+      .select("tenant_id")
       .eq("id", id)
       .single();
 
     if (!item) {
       return errorResponse("Item not found");
+    }
+
+    // Get tenant name for logging
+    let tenantName = item.tenant_id;
+    if (item.tenant_id) {
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("name")
+        .eq("id", item.tenant_id)
+        .single();
+      tenantName = tenant?.name || item.tenant_id;
     }
 
     // Delete item
@@ -668,14 +733,14 @@ export async function deleteFeaturedRestaurant(id: string): Promise<ActionResult
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
     await logActivity(session.userId, "delete", "homepage", {
       resourceType: "featured_restaurant",
       resourceId: id,
-      resourceName: (item.tenant as any)?.name || item.tenant_id,
+      resourceName: tenantName,
     });
 
     revalidatePath("/homepage");
@@ -711,7 +776,7 @@ export async function reorderFeaturedRestaurants(
         .eq("id", item.id);
 
       if (error) {
-        return errorResponse(handleSupabaseError(error));
+        return handleSupabaseError(error);
       }
     }
 
@@ -752,7 +817,7 @@ export async function toggleFeaturedRestaurantStatus(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     revalidatePath("/homepage");
@@ -785,9 +850,9 @@ export async function getReferenceOptions(
       case "event":
         query = supabase
           .from("events")
-          .select("id, title, image_url")
+          .select("id, title, images")
           .eq("is_published", true)
-          .order("start_date", { ascending: false })
+          .order("start_at", { ascending: false })
           .limit(50);
         break;
       case "tenant":
@@ -811,7 +876,7 @@ export async function getReferenceOptions(
           .from("promotions")
           .select("id, title, image_url")
           .eq("status", "published")
-          .order("valid_from", { ascending: false })
+          .order("start_date", { ascending: false })
           .limit(50);
         break;
       default:
@@ -821,13 +886,13 @@ export async function getReferenceOptions(
     const { data, error } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     const options = (data || []).map((item: any) => ({
       id: item.id,
       label: item.title || item.name,
-      image: item.image_url || item.logo_url,
+      image: item.image_url || item.logo_url || (item.images?.[0] ?? null),
     }));
 
     return successResponse(options);
@@ -869,7 +934,7 @@ export async function getRestaurantOptions(): Promise<
     const { data, error } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);

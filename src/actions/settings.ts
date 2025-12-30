@@ -55,7 +55,7 @@ export async function getSiteSettings(): Promise<ActionResult<SiteSetting[]>> {
       .order("sort_order", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);
@@ -80,7 +80,7 @@ export async function getSiteSetting(id: string): Promise<ActionResult<SiteSetti
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data);
@@ -105,7 +105,7 @@ export async function getSettingByKey(key: string): Promise<ActionResult<SiteSet
       .single();
 
     if (error && error.code !== "PGRST116") {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || null);
@@ -172,7 +172,7 @@ export async function createSiteSetting(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -258,7 +258,7 @@ export async function updateSiteSetting(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -313,7 +313,7 @@ export async function deleteSiteSetting(id: string): Promise<ActionResult<void>>
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -359,7 +359,7 @@ export async function toggleSettingStatus(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     revalidatePath("/settings");
@@ -389,7 +389,7 @@ export async function getSettingsGroup<T>(
       .single();
 
     if (error && error.code !== "PGRST116") {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     if (!data?.value) {
@@ -446,7 +446,7 @@ export async function saveSettingsGroup(
       );
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -633,7 +633,7 @@ export async function getActiveScripts(
       .order("sort_order", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);

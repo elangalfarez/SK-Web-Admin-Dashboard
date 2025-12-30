@@ -69,8 +69,8 @@ const navGroups: NavGroup[] = [
   {
     title: "Homepage",
     items: [
-      { title: "What's On", href: "/whats-on", icon: Sparkles },
-      { title: "Featured Restaurants", href: "/featured-restaurants", icon: Utensils },
+      { title: "What's On", href: "/homepage/whats-on", icon: Sparkles },
+      { title: "Featured Restaurants", href: "/homepage/restaurants", icon: Utensils },
     ],
   },
   {

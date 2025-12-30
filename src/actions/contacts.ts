@@ -106,7 +106,7 @@ export async function getContacts(
     const { data, error, count } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse({
@@ -137,7 +137,7 @@ export async function getContact(id: string): Promise<ActionResult<ContactWithRe
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Check for admin response (if table exists)
@@ -201,7 +201,7 @@ export async function markContactAsRead(id: string): Promise<ActionResult<Contac
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -242,7 +242,7 @@ export async function markContactAsUnread(id: string): Promise<ActionResult<Cont
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     revalidatePath("/contacts");
@@ -278,7 +278,7 @@ export async function markMultipleAsRead(ids: string[]): Promise<ActionResult<vo
       .in("id", ids);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -327,7 +327,7 @@ export async function deleteContact(id: string): Promise<ActionResult<void>> {
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -369,7 +369,7 @@ export async function deleteMultipleContacts(ids: string[]): Promise<ActionResul
       .in("id", ids);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -491,7 +491,7 @@ export async function exportContacts(
     const { data, error } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity

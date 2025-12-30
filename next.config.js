@@ -43,11 +43,19 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   
+  // Allow dev server access from LAN IPs
+  allowedDevOrigins: [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://192.168.1.5:3000",
+    "http://192.168.*.*:3000",
+  ],
+
   // Experimental features
   experimental: {
     // Enable server actions
     serverActions: {
-      allowedOrigins: ["localhost:3000"],
+      allowedOrigins: ["localhost:3000", "192.168.1.5:3000"],
     },
   },
   

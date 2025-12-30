@@ -389,7 +389,7 @@ export async function updateLastLogin(userId: string): Promise<void> {
  * Note: In production, use bcrypt.compare()
  * This is a placeholder that should be replaced with proper implementation
  */
-async function verifyPassword(
+export async function verifyPassword(
   password: string,
   hash: string
 ): Promise<boolean> {

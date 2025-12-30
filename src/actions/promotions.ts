@@ -23,19 +23,10 @@ export async function getPromotions(
     const supabase = await createClient();
     const { page, perPage, search, status, tenantId, startDate, endDate, sortBy, sortOrder } = filters;
 
-    // Build query
+    // Build query - fetch promotions without join (no FK relationship exists)
     let query = supabase
       .from("promotions")
-      .select(`
-        *,
-        tenant:tenants (
-          id,
-          name,
-          tenant_code,
-          logo_url,
-          category_id
-        )
-      `, { count: "exact" });
+      .select("*", { count: "exact" });
 
     // Apply filters
     if (search) {
@@ -68,14 +59,38 @@ export async function getPromotions(
     const to = from + perPage - 1;
     query = query.range(from, to);
 
-    const { data, error, count } = await query;
+    const { data: promotions, error, count } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
+    // Fetch tenants separately for the promotions
+    const tenantIds = [...new Set((promotions || []).map(p => p.tenant_id).filter(Boolean))];
+    let tenantsMap: Record<string, Tenant> = {};
+
+    if (tenantIds.length > 0) {
+      const { data: tenants } = await supabase
+        .from("tenants")
+        .select("id, name, tenant_code, logo_url, category_id")
+        .in("id", tenantIds);
+
+      if (tenants) {
+        tenantsMap = tenants.reduce((acc, tenant) => {
+          acc[tenant.id] = tenant as Tenant;
+          return acc;
+        }, {} as Record<string, Tenant>);
+      }
+    }
+
+    // Merge promotions with tenant data
+    const promotionsWithTenant: PromotionWithTenant[] = (promotions || []).map(promotion => ({
+      ...promotion,
+      tenant: tenantsMap[promotion.tenant_id] || null,
+    }));
+
     return successResponse({
-      data: (data || []) as PromotionWithTenant[],
+      data: promotionsWithTenant,
       total: count || 0,
       page,
       perPage,
@@ -95,27 +110,33 @@ export async function getPromotion(id: string): Promise<ActionResult<PromotionWi
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // Fetch promotion without join (no FK relationship exists)
+    const { data: promotion, error } = await supabase
       .from("promotions")
-      .select(`
-        *,
-        tenant:tenants (
-          id,
-          name,
-          tenant_code,
-          logo_url,
-          category_id,
-          main_floor
-        )
-      `)
+      .select("*")
       .eq("id", id)
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
-    return successResponse(data as PromotionWithTenant);
+    // Fetch tenant separately
+    let tenant: Tenant | null = null;
+    if (promotion.tenant_id) {
+      const { data: tenantData } = await supabase
+        .from("tenants")
+        .select("id, name, tenant_code, logo_url, category_id, main_floor")
+        .eq("id", promotion.tenant_id)
+        .single();
+
+      tenant = tenantData as Tenant | null;
+    }
+
+    return successResponse({
+      ...promotion,
+      tenant,
+    } as PromotionWithTenant);
   } catch (error) {
     console.error("Get promotion error:", error);
     return errorResponse("Failed to fetch promotion");
@@ -182,7 +203,7 @@ export async function createPromotion(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -277,7 +298,7 @@ export async function updatePromotion(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -332,7 +353,7 @@ export async function deletePromotion(id: string): Promise<ActionResult<void>> {
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -397,7 +418,7 @@ export async function updatePromotionStatus(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -442,7 +463,7 @@ export async function getTenants(): Promise<ActionResult<Tenant[]>> {
       .order("name", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);
@@ -470,7 +491,7 @@ export async function checkExpiringPromotions(): Promise<ActionResult<Promotion[
       .gte("end_date", new Date().toISOString());
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);
@@ -497,7 +518,7 @@ export async function autoExpirePromotions(): Promise<ActionResult<number>> {
       .select();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     const count = data?.length || 0;

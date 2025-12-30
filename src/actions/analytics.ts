@@ -123,7 +123,7 @@ export async function getActivityLogs(
     const { data, error, count } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse({
@@ -171,7 +171,7 @@ export async function getActivityLog(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data as ActivityLogWithUser);
@@ -383,7 +383,7 @@ export async function getRecentActivity(
       .limit(limit);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse((data || []) as ActivityLogWithUser[]);
@@ -413,7 +413,7 @@ export async function getActivityByDay(
       .order("created_at", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Group by date
@@ -459,7 +459,7 @@ export async function getActivityByModule(): Promise<
       .select("module");
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Group by module
@@ -493,7 +493,7 @@ export async function getAdminUsers(): Promise<ActionResult<AdminUserOption[]>> 
       .order("full_name", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);

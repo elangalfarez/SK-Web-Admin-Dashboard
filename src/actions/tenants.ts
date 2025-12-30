@@ -31,19 +31,10 @@ export async function getTenantsList(
     const supabase = await createClient();
     const { page, perPage, search, categoryId, floor, status, featured, newTenant, sortBy, sortOrder } = filters;
 
-    // Build query
+    // Build query - fetch tenants without join (no FK relationship may exist)
     let query = supabase
       .from("tenants")
-      .select(`
-        *,
-        category:tenant_categories (
-          id,
-          name,
-          display_name,
-          icon,
-          color
-        )
-      `, { count: "exact" });
+      .select("*", { count: "exact" });
 
     // Apply filters
     if (search) {
@@ -80,14 +71,38 @@ export async function getTenantsList(
     const to = from + perPage - 1;
     query = query.range(from, to);
 
-    const { data, error, count } = await query;
+    const { data: tenants, error, count } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
+    // Fetch categories separately
+    const categoryIds = [...new Set((tenants || []).map(t => t.category_id).filter(Boolean))];
+    let categoriesMap: Record<string, TenantCategory> = {};
+
+    if (categoryIds.length > 0) {
+      const { data: categories } = await supabase
+        .from("tenant_categories")
+        .select("id, name, display_name, icon, color")
+        .in("id", categoryIds);
+
+      if (categories) {
+        categoriesMap = categories.reduce((acc, cat) => {
+          acc[cat.id] = cat as TenantCategory;
+          return acc;
+        }, {} as Record<string, TenantCategory>);
+      }
+    }
+
+    // Merge tenants with category data
+    const tenantsWithCategory: TenantWithCategory[] = (tenants || []).map(tenant => ({
+      ...tenant,
+      category: tenant.category_id ? categoriesMap[tenant.category_id] || null : null,
+    }));
+
     return successResponse({
-      data: (data || []) as TenantWithCategory[],
+      data: tenantsWithCategory,
       total: count || 0,
       page,
       perPage,
@@ -107,26 +122,33 @@ export async function getTenant(id: string): Promise<ActionResult<TenantWithCate
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // Fetch tenant without join (no FK relationship may exist)
+    const { data: tenant, error } = await supabase
       .from("tenants")
-      .select(`
-        *,
-        category:tenant_categories (
-          id,
-          name,
-          display_name,
-          icon,
-          color
-        )
-      `)
+      .select("*")
       .eq("id", id)
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
-    return successResponse(data as TenantWithCategory);
+    // Fetch category separately
+    let category: TenantCategory | null = null;
+    if (tenant.category_id) {
+      const { data: categoryData } = await supabase
+        .from("tenant_categories")
+        .select("id, name, display_name, icon, color")
+        .eq("id", tenant.category_id)
+        .single();
+
+      category = categoryData as TenantCategory | null;
+    }
+
+    return successResponse({
+      ...tenant,
+      category,
+    } as TenantWithCategory);
   } catch (error) {
     console.error("Get tenant error:", error);
     return errorResponse("Failed to fetch tenant");
@@ -141,26 +163,33 @@ export async function getTenantByCode(code: string): Promise<ActionResult<Tenant
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // Fetch tenant without join (no FK relationship may exist)
+    const { data: tenant, error } = await supabase
       .from("tenants")
-      .select(`
-        *,
-        category:tenant_categories (
-          id,
-          name,
-          display_name,
-          icon,
-          color
-        )
-      `)
+      .select("*")
       .eq("tenant_code", code)
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
-    return successResponse(data as TenantWithCategory);
+    // Fetch category separately
+    let category: TenantCategory | null = null;
+    if (tenant.category_id) {
+      const { data: categoryData } = await supabase
+        .from("tenant_categories")
+        .select("id, name, display_name, icon, color")
+        .eq("id", tenant.category_id)
+        .single();
+
+      category = categoryData as TenantCategory | null;
+    }
+
+    return successResponse({
+      ...tenant,
+      category,
+    } as TenantWithCategory);
   } catch (error) {
     console.error("Get tenant by code error:", error);
     return errorResponse("Failed to fetch tenant");
@@ -239,7 +268,7 @@ export async function createTenant(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -350,7 +379,7 @@ export async function updateTenant(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -415,7 +444,7 @@ export async function deleteTenant(id: string): Promise<ActionResult<void>> {
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -463,7 +492,7 @@ export async function toggleTenantStatus(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -511,7 +540,7 @@ export async function toggleTenantFeatured(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -547,7 +576,7 @@ export async function getTenantCategories(): Promise<ActionResult<TenantCategory
       .order("sort_order", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);
@@ -568,7 +597,7 @@ export async function getTenantCategory(id: string): Promise<ActionResult<Tenant
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data);
@@ -634,7 +663,7 @@ export async function createTenantCategory(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -725,7 +754,7 @@ export async function updateTenantCategory(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -777,7 +806,7 @@ export async function deleteTenantCategory(id: string): Promise<ActionResult<voi
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -811,7 +840,7 @@ export async function getMallFloors(): Promise<ActionResult<MallFloor[]>> {
       .order("floor_number", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);

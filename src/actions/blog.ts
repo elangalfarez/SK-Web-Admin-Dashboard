@@ -24,22 +24,14 @@ export async function getPosts(
     const supabase = await createClient();
     const { page, perPage, search, status, featured, categoryId, tags, sortBy, sortOrder } = filters;
 
-    // Build query
+    // Build query - fetch posts without join (no FK relationship may exist)
     let query = supabase
       .from("posts")
-      .select(`
-        *,
-        category:blog_categories (
-          id,
-          name,
-          slug,
-          color
-        )
-      `, { count: "exact" });
+      .select("*", { count: "exact" });
 
     // Apply filters
     if (search) {
-      query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`);
+      query = query.or(`title.ilike.%${search}%,summary.ilike.%${search}%`);
     }
 
     if (status && status !== "all") {
@@ -68,14 +60,38 @@ export async function getPosts(
     const to = from + perPage - 1;
     query = query.range(from, to);
 
-    const { data, error, count } = await query;
+    const { data: posts, error, count } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
+    // Fetch categories separately for the posts
+    const categoryIds = [...new Set((posts || []).map(p => p.category_id).filter(Boolean))];
+    let categoriesMap: Record<string, BlogCategory> = {};
+
+    if (categoryIds.length > 0) {
+      const { data: categories } = await supabase
+        .from("blog_categories")
+        .select("id, name, slug, accent_color")
+        .in("id", categoryIds);
+
+      if (categories) {
+        categoriesMap = categories.reduce((acc, cat) => {
+          acc[cat.id] = cat as BlogCategory;
+          return acc;
+        }, {} as Record<string, BlogCategory>);
+      }
+    }
+
+    // Merge posts with category data
+    const postsWithCategory: PostWithCategory[] = (posts || []).map(post => ({
+      ...post,
+      category: post.category_id ? categoriesMap[post.category_id] || null : null,
+    }));
+
     return successResponse({
-      data: (data || []) as PostWithCategory[],
+      data: postsWithCategory,
       total: count || 0,
       page,
       perPage,
@@ -95,25 +111,33 @@ export async function getPost(id: string): Promise<ActionResult<PostWithCategory
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // Fetch post without join (no FK relationship may exist)
+    const { data: post, error } = await supabase
       .from("posts")
-      .select(`
-        *,
-        category:blog_categories (
-          id,
-          name,
-          slug,
-          color
-        )
-      `)
+      .select("*")
       .eq("id", id)
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
-    return successResponse(data as PostWithCategory);
+    // Fetch category separately
+    let category: BlogCategory | null = null;
+    if (post.category_id) {
+      const { data: categoryData } = await supabase
+        .from("blog_categories")
+        .select("id, name, slug, accent_color")
+        .eq("id", post.category_id)
+        .single();
+
+      category = categoryData as BlogCategory | null;
+    }
+
+    return successResponse({
+      ...post,
+      category,
+    } as PostWithCategory);
   } catch (error) {
     console.error("Get post error:", error);
     return errorResponse("Failed to fetch post");
@@ -128,25 +152,33 @@ export async function getPostBySlug(slug: string): Promise<ActionResult<PostWith
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // Fetch post without join (no FK relationship may exist)
+    const { data: post, error } = await supabase
       .from("posts")
-      .select(`
-        *,
-        category:blog_categories (
-          id,
-          name,
-          slug,
-          color
-        )
-      `)
+      .select("*")
       .eq("slug", slug)
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
-    return successResponse(data as PostWithCategory);
+    // Fetch category separately
+    let category: BlogCategory | null = null;
+    if (post.category_id) {
+      const { data: categoryData } = await supabase
+        .from("blog_categories")
+        .select("id, name, slug, accent_color")
+        .eq("id", post.category_id)
+        .single();
+
+      category = categoryData as BlogCategory | null;
+    }
+
+    return successResponse({
+      ...post,
+      category,
+    } as PostWithCategory);
   } catch (error) {
     console.error("Get post by slug error:", error);
     return errorResponse("Failed to fetch post");
@@ -237,7 +269,7 @@ export async function createPost(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -354,7 +386,7 @@ export async function updatePost(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -409,7 +441,7 @@ export async function deletePost(id: string): Promise<ActionResult<void>> {
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -471,7 +503,7 @@ export async function togglePostPublish(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -507,7 +539,7 @@ export async function getCategories(): Promise<ActionResult<BlogCategory[]>> {
       .order("name", { ascending: true });
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data || []);
@@ -528,7 +560,7 @@ export async function getCategory(id: string): Promise<ActionResult<BlogCategory
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data);
@@ -594,7 +626,7 @@ export async function createCategory(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -679,7 +711,7 @@ export async function updateCategory(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -731,7 +763,7 @@ export async function deleteCategory(id: string): Promise<ActionResult<void>> {
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -763,7 +795,7 @@ export async function getPostTags(): Promise<ActionResult<string[]>> {
       .select("tags");
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Extract unique tags from all posts

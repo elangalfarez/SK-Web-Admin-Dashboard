@@ -84,7 +84,7 @@ export async function getEvents(
     const { data, error, count } = await query;
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse({
@@ -115,7 +115,7 @@ export async function getEvent(id: string): Promise<ActionResult<Event>> {
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data);
@@ -140,7 +140,7 @@ export async function getEventBySlug(slug: string): Promise<ActionResult<Event>>
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     return successResponse(data);
@@ -228,7 +228,7 @@ export async function createEvent(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -337,7 +337,7 @@ export async function updateEvent(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -392,7 +392,7 @@ export async function deleteEvent(id: string): Promise<ActionResult<void>> {
       .eq("id", id);
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -440,7 +440,7 @@ export async function toggleEventPublish(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -489,7 +489,7 @@ export async function toggleEventFeatured(
       .single();
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Log activity
@@ -524,7 +524,7 @@ export async function getEventTags(): Promise<ActionResult<string[]>> {
       .select("tags");
 
     if (error) {
-      return errorResponse(handleSupabaseError(error));
+      return handleSupabaseError(error);
     }
 
     // Extract unique tags from all events

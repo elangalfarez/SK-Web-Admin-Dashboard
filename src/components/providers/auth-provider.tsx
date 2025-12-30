@@ -130,12 +130,18 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
+      // Set a maximum time for auth initialization to prevent infinite loading
+      const authTimeout = setTimeout(() => {
+        console.warn("Auth initialization timed out");
+        setIsLoading(false);
+      }, 8000); // 8 second timeout
+
       try {
         const supabase = createClient();
-        
+
         // Check for Supabase session
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session?.user?.email) {
           // Get admin user by email
           const { data: adminUser } = await supabase
@@ -150,9 +156,16 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
             setUser(authUser);
           }
         } else {
-          // Check for custom session cookie (via API)
+          // Check for custom session cookie (via API) with timeout
           try {
-            const response = await fetch("/api/auth/session");
+            const controller = new AbortController();
+            const fetchTimeout = setTimeout(() => controller.abort(), 3000);
+
+            const response = await fetch("/api/auth/session", {
+              signal: controller.signal,
+            });
+            clearTimeout(fetchTimeout);
+
             if (response.ok) {
               const data = await response.json();
               if (data.userId) {
@@ -161,12 +174,13 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
               }
             }
           } catch {
-            // Session endpoint might not exist yet
+            // Session endpoint might not exist or timed out
           }
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
       } finally {
+        clearTimeout(authTimeout);
         setIsLoading(false);
       }
     };
