@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { loginWithPassword, loginWithMagicLink } from "@/actions/auth";
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
 
@@ -257,5 +257,32 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="animate-fade-in">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+            <Sparkles className="w-8 h-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-display font-bold tracking-tight">
+            Supermal Karawaci
+          </h1>
+          <p className="text-muted-foreground mt-1">Admin Dashboard</p>
+        </div>
+        <Card className="border-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center py-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
