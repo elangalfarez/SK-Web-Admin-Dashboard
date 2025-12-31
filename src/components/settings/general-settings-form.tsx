@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUploader } from "@/components/shared/image-uploader";
+import { SingleImageUploader } from "@/components/shared/image-uploader";
 import { getGeneralSettings, saveGeneralSettings } from "@/actions/settings";
 import type { GeneralSettings } from "@/lib/validations/settings";
 
@@ -181,13 +181,11 @@ export function GeneralSettingsForm() {
             {/* Logo */}
             <div className="space-y-2">
               <Label>Logo (Light Mode)</Label>
-              <ImageUploader
-                value={formData.logo_url}
-                onChange={(url) => updateField("logo_url", url)}
-                bucket="settings"
-                path="logos"
-                aspectRatio="auto"
-                maxSize={1}
+              <SingleImageUploader
+                value={formData.logo_url || null}
+                onChange={(url: string | null) => updateField("logo_url", url || "")}
+                bucket="GENERAL"
+                folder="settings/logos"
               />
               <p className="text-xs text-muted-foreground">
                 Recommended: PNG or SVG with transparent background
@@ -197,13 +195,11 @@ export function GeneralSettingsForm() {
             {/* Logo Dark */}
             <div className="space-y-2">
               <Label>Logo (Dark Mode)</Label>
-              <ImageUploader
-                value={formData.logo_dark_url}
-                onChange={(url) => updateField("logo_dark_url", url)}
-                bucket="settings"
-                path="logos"
-                aspectRatio="auto"
-                maxSize={1}
+              <SingleImageUploader
+                value={formData.logo_dark_url || null}
+                onChange={(url: string | null) => updateField("logo_dark_url", url || "")}
+                bucket="GENERAL"
+                folder="settings/logos"
               />
               <p className="text-xs text-muted-foreground">
                 Used when dark mode is active
@@ -214,13 +210,12 @@ export function GeneralSettingsForm() {
           {/* Favicon */}
           <div className="space-y-2">
             <Label>Favicon</Label>
-            <ImageUploader
-              value={formData.favicon_url}
-              onChange={(url) => updateField("favicon_url", url)}
-              bucket="settings"
-              path="favicons"
+            <SingleImageUploader
+              value={formData.favicon_url || null}
+              onChange={(url: string | null) => updateField("favicon_url", url || "")}
+              bucket="GENERAL"
+              folder="settings/favicons"
               aspectRatio="square"
-              maxSize={0.5}
             />
             <p className="text-xs text-muted-foreground">
               Recommended: 32x32 or 64x64 pixels, PNG or ICO format

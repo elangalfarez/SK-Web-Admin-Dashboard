@@ -11,10 +11,9 @@ import type {
   PermissionModule,
   PermissionAction,
   PermissionName,
-  Permission,
   UserRole,
 } from "@/types/auth";
-import type { AdminUser, AdminRole, AdminPermission } from "@/types/database";
+import type { AdminUser } from "@/types/database";
 
 // ============================================================================
 // AUTHENTICATION FUNCTIONS
@@ -216,8 +215,8 @@ export async function getAuthUserById(userId: string): Promise<AuthUser | null> 
 
     const roles: UserRole[] = (userRoles || [])
       .map((ur) => ur.role)
-      .filter((r): r is AdminRole => r !== null)
-      .map((r) => ({
+      .filter((r): r is NonNullable<typeof r> => r !== null && !Array.isArray(r))
+      .map((r: any) => ({
         id: r.id,
         name: r.name as UserRoleName,
         display_name: r.display_name,
@@ -239,7 +238,7 @@ export async function getAuthUserById(userId: string): Promise<AuthUser | null> 
 
     const permissionNames = new Set<PermissionName>(
       (rolePermissions || [])
-        .map((rp) => rp.permission?.name)
+        .map((rp: any) => rp.permission?.name)
         .filter((name): name is PermissionName => name !== null && name !== undefined)
     );
 

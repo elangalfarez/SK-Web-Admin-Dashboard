@@ -15,9 +15,6 @@ import type {
   WhatsOnContentType,
   FeaturedRestaurant,
   Tenant,
-  Event,
-  Post,
-  Promotion,
 } from "@/types/database";
 
 // ============================================================================
@@ -79,12 +76,14 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
 
           if (refData) {
             // Normalize the data structure
+            // Cast to any since refData shape varies by content_type
+            const data = refData as any;
             reference_data = {
-              id: refData.id,
-              title: refData.title,
-              name: refData.name,
-              image_url: refData.image_url || refData.logo_url || (refData.images?.[0] ?? null),
-              logo_url: refData.logo_url,
+              id: data.id,
+              title: data.title,
+              name: data.name,
+              image_url: data.image_url || data.logo_url || (data.images?.[0] ?? null),
+              logo_url: data.logo_url,
             };
           }
         }
@@ -137,12 +136,14 @@ export async function getWhatsOnItem(id: string): Promise<ActionResult<WhatsOnRe
 
         if (refData) {
           // Normalize the data structure
+          // Cast to any since refData shape varies by content_type
+          const resolvedData = refData as any;
           reference_data = {
-            id: refData.id,
-            title: refData.title,
-            name: refData.name,
-            image_url: refData.image_url || refData.logo_url || (refData.images?.[0] ?? null),
-            logo_url: refData.logo_url,
+            id: resolvedData.id,
+            title: resolvedData.title,
+            name: resolvedData.name,
+            image_url: resolvedData.image_url || resolvedData.logo_url || (resolvedData.images?.[0] ?? null),
+            logo_url: resolvedData.logo_url,
           };
         }
       }

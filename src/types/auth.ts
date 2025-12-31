@@ -1,7 +1,7 @@
 // src/types/auth.ts
 // Created: Authentication and authorization type definitions
 
-import type { AdminUser, AdminRole, AdminPermission } from "./database";
+import type { AdminRole } from "./database";
 
 // ============================================================================
 // USER ROLES

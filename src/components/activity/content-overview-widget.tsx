@@ -120,7 +120,7 @@ export function ContentOverviewWidget({ overview }: ContentOverviewWidgetProps) 
                     </Badge>
                   )}
                   {item.in_whats_on_count > 0 && (
-                    <Badge variant="primary" className="text-xs">
+                    <Badge variant="info" className="text-xs">
                       {item.in_whats_on_count} in What's On
                     </Badge>
                   )}

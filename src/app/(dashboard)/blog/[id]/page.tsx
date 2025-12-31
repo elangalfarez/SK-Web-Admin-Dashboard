@@ -9,7 +9,6 @@ import {
   FolderOpen,
   Calendar,
   Clock,
-  User,
   Pencil,
   ArrowLeft,
   Globe,
@@ -17,7 +16,6 @@ import {
   Star,
   Search,
 } from "lucide-react";
-import { PageHeader } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -98,9 +96,9 @@ export default async function PostDetailPage({
                 <Badge
                   variant="outline"
                   style={{
-                    backgroundColor: post.category.color ? `${post.category.color}20` : undefined,
-                    borderColor: post.category.color || undefined,
-                    color: post.category.color || undefined,
+                    backgroundColor: post.category.accent_color ? `${post.category.accent_color}20` : undefined,
+                    borderColor: post.category.accent_color || undefined,
+                    color: post.category.accent_color || undefined,
                   }}
                 >
                   {post.category.name}
@@ -121,10 +119,10 @@ export default async function PostDetailPage({
         {/* Main Content */}
         <div className="space-y-6 lg:col-span-2">
           {/* Featured Image */}
-          {post.featured_image && (
+          {post.image_url && (
             <div className="aspect-video overflow-hidden rounded-lg border border-border">
               <img
-                src={post.featured_image}
+                src={post.image_url}
                 alt={post.title}
                 className="h-full w-full object-cover"
               />
@@ -132,19 +130,19 @@ export default async function PostDetailPage({
           )}
 
           {/* Excerpt */}
-          {post.excerpt && (
+          {post.summary && (
             <Card>
               <CardHeader>
                 <CardTitle>Excerpt</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">{post.excerpt}</p>
+                <p className="text-muted-foreground">{post.summary}</p>
               </CardContent>
             </Card>
           )}
 
           {/* Content */}
-          {post.body && (
+          {post.body_html && (
             <Card>
               <CardHeader>
                 <CardTitle>Content</CardTitle>
@@ -152,36 +150,34 @@ export default async function PostDetailPage({
               <CardContent>
                 <div
                   className="prose prose-sm dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: post.body }}
+                  dangerouslySetInnerHTML={{ __html: post.body_html }}
                 />
               </CardContent>
             </Card>
           )}
 
           {/* SEO Preview */}
-          {(post.meta_title || post.meta_description) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Search className="h-4 w-4" />
-                  SEO Preview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1 rounded-lg border border-border p-4">
-                  <p className="text-lg text-primary hover:underline cursor-pointer">
-                    {post.meta_title || post.title}
-                  </p>
-                  <p className="text-sm text-success">
-                    supermalkarawaci.co.id/blog/{post.slug}
-                  </p>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {post.meta_description || post.excerpt || "No description"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                SEO Preview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1 rounded-lg border border-border p-4">
+                <p className="text-lg text-primary hover:underline cursor-pointer">
+                  {post.title}
+                </p>
+                <p className="text-sm text-success">
+                  supermalkarawaci.co.id/blog/{post.slug}
+                </p>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {post.summary || "No description"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sidebar */}
@@ -204,13 +200,13 @@ export default async function PostDetailPage({
                   </div>
                 </div>
               )}
-              {post.published_at && (
+              {post.publish_at && (
                 <div className="flex items-start gap-3">
                   <Calendar className="mt-0.5 h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Published</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatDisplayDateTime(post.published_at)}
+                      {formatDisplayDateTime(post.publish_at)}
                     </p>
                   </div>
                 </div>

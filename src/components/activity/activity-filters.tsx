@@ -174,7 +174,7 @@ export function ActivityFilters({
           Filters
           {activeFilterCount > 0 && (
             <Badge
-              variant="primary"
+              variant="default"
               className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-xs"
             >
               {activeFilterCount}

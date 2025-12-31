@@ -16,7 +16,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
   const { isLoading, isAuthenticated } = useAuth();
 
@@ -69,7 +68,7 @@ export default function DashboardLayout({
       <div
         className={cn(
           "flex min-h-screen flex-col transition-all duration-300",
-          sidebarCollapsed ? "lg:pl-[72px]" : "lg:pl-64"
+          "lg:pl-64"
         )}
       >
         {/* Header */}

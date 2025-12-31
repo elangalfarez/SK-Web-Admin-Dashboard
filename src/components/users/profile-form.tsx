@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ImageUploader } from "@/components/shared/image-uploader";
+import { SingleImageUploader } from "@/components/shared/image-uploader";
 import { updateOwnProfile } from "@/actions/users";
 import type { UserWithRoles } from "@/actions/users";
 
@@ -73,16 +73,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Avatar */}
           <div className="flex justify-center">
-            <ImageUploader
-              value={formData.avatar_url}
-              onChange={(url) =>
-                setFormData((prev) => ({ ...prev, avatar_url: url }))
+            <SingleImageUploader
+              value={formData.avatar_url || null}
+              onChange={(url: string | null) =>
+                setFormData((prev) => ({ ...prev, avatar_url: url || "" }))
               }
-              bucket="avatars"
-              path="admin"
+              bucket="AVATARS"
+              folder="admin"
               aspectRatio="square"
-              maxSize={1}
-              className="w-32"
             />
           </div>
 

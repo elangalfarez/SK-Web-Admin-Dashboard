@@ -7,7 +7,6 @@ import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Save, ArrowLeft, Eye, Search } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { generateSlug } from "@/lib/utils/slug";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,15 +64,15 @@ export function BlogPostForm({ post, mode }: BlogPostFormProps) {
   const [formData, setFormData] = useState<FormData>({
     title: post?.title || "",
     slug: post?.slug || "",
-    excerpt: post?.excerpt || "",
-    body: post?.body || "",
-    featured_image: post?.featured_image || null,
+    excerpt: post?.summary || "",
+    body: post?.body_html || "",
+    featured_image: post?.image_url || null,
     category_id: post?.category_id || null,
     tags: post?.tags || [],
     is_published: post?.is_published || false,
     is_featured: post?.is_featured || false,
-    meta_title: post?.meta_title || "",
-    meta_description: post?.meta_description || "",
+    meta_title: "",
+    meta_description: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -374,10 +373,10 @@ export function BlogPostForm({ post, mode }: BlogPostFormProps) {
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       <span className="flex items-center gap-2">
-                        {category.color && (
+                        {category.accent_color && (
                           <span
                             className="h-2 w-2 rounded-full"
-                            style={{ backgroundColor: category.color }}
+                            style={{ backgroundColor: category.accent_color }}
                           />
                         )}
                         {category.name}

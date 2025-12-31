@@ -8,7 +8,6 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/supabase/auth";
 import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
-import { contactFiltersSchema } from "@/lib/validations/contact";
 import type { ActionResult } from "@/lib/utils/api-helpers";
 import type { Contact, EnquiryType, PaginatedResult } from "@/types/database";
 
@@ -284,7 +283,7 @@ export async function markMultipleAsRead(ids: string[]): Promise<ActionResult<vo
     // Log activity
     await logActivity(session.userId, "bulk_read", "contacts", {
       resourceType: "contact",
-      count: ids.length,
+      metadata: { count: ids.length },
     });
 
     revalidatePath("/contacts");
@@ -375,7 +374,7 @@ export async function deleteMultipleContacts(ids: string[]): Promise<ActionResul
     // Log activity
     await logActivity(session.userId, "bulk_delete", "contacts", {
       resourceType: "contact",
-      count: ids.length,
+      metadata: { count: ids.length },
     });
 
     revalidatePath("/contacts");
@@ -497,8 +496,10 @@ export async function exportContacts(
     // Log activity
     await logActivity(session.userId, "export", "contacts", {
       resourceType: "contact",
-      count: (data || []).length,
-      filters,
+      metadata: {
+        count: (data || []).length,
+        filters,
+      },
     });
 
     return successResponse(data || [], `Exported ${(data || []).length} contacts`);

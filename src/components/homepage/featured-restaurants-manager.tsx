@@ -4,7 +4,6 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   Pencil,
@@ -15,7 +14,6 @@ import {
   UtensilsCrossed,
   Calendar,
   Star,
-  Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -41,7 +39,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUploader } from "@/components/shared/image-uploader";
+import { SingleImageUploader } from "@/components/shared/image-uploader";
 import {
   getFeaturedRestaurants,
   createFeaturedRestaurant,
@@ -137,10 +135,6 @@ function RestaurantForm({
     onSubmit(data);
   };
 
-  const selectedRestaurant = restaurantOptions.find(
-    (r) => r.id === formData.tenant_id
-  );
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Restaurant Selection */}
@@ -227,15 +221,14 @@ function RestaurantForm({
       {/* Featured Image */}
       <div className="space-y-2">
         <Label>Featured Image</Label>
-        <ImageUploader
+        <SingleImageUploader
           value={formData.featured_image_url}
-          onChange={(url) =>
-            setFormData((prev) => ({ ...prev, featured_image_url: url }))
+          onChange={(url: string | null) =>
+            setFormData((prev) => ({ ...prev, featured_image_url: url || "" }))
           }
-          bucket="homepage"
-          path="restaurants"
+          bucket="GENERAL"
+          folder="homepage/restaurants"
           aspectRatio="video"
-          maxSize={2}
         />
         <p className="text-xs text-muted-foreground">
           Optional. Uses restaurant logo if not provided.
@@ -306,7 +299,6 @@ function RestaurantForm({
 // ============================================================================
 
 export function FeaturedRestaurantsManager() {
-  const router = useRouter();
   const [items, setItems] = useState<FeaturedRestaurantWithTenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();

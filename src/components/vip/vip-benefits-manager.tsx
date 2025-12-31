@@ -4,8 +4,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Gift, GripVertical, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Gift, GripVertical} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -178,7 +177,6 @@ function BenefitForm({ benefit, onSubmit, onCancel, isPending }: BenefitFormProp
 // ============================================================================
 
 export function VipBenefitsManager() {
-  const router = useRouter();
   const [benefits, setBenefits] = useState<VipBenefit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();

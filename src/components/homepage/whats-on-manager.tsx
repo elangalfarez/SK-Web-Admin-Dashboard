@@ -4,7 +4,6 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   Pencil,
@@ -17,8 +16,6 @@ import {
   FileText,
   Percent,
   Sparkles,
-  ExternalLink,
-  Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -44,7 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUploader } from "@/components/shared/image-uploader";
+import { SingleImageUploader } from "@/components/shared/image-uploader";
 import {
   getWhatsOnItems,
   createWhatsOnItem,
@@ -264,15 +261,14 @@ function ItemForm({ item, onSubmit, onCancel, isPending }: ItemFormProps) {
 
           <div className="space-y-2">
             <Label>Image</Label>
-            <ImageUploader
+            <SingleImageUploader
               value={formData.custom_image_url}
-              onChange={(url) =>
-                setFormData((prev) => ({ ...prev, custom_image_url: url }))
+              onChange={(url: string | null) =>
+                setFormData((prev) => ({ ...prev, custom_image_url: url || "" }))
               }
-              bucket="homepage"
-              path="whats-on"
+              bucket="GENERAL"
+              folder="homepage/whats-on"
               aspectRatio="video"
-              maxSize={2}
             />
           </div>
 
@@ -355,7 +351,6 @@ function ItemForm({ item, onSubmit, onCancel, isPending }: ItemFormProps) {
 // ============================================================================
 
 export function WhatsOnManager() {
-  const router = useRouter();
   const [items, setItems] = useState<WhatsOnResolved[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -567,7 +562,7 @@ export function WhatsOnManager() {
                         />
                       ) : (
                         <div className="flex h-full items-center justify-center">
-                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                          <Sparkles className="h-6 w-6 text-muted-foreground" />
                         </div>
                       )}
                     </div>

@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUploader } from "@/components/shared/image-uploader";
+import { SingleImageUploader } from "@/components/shared/image-uploader";
 import { getSeoSettings, saveSeoSettings } from "@/actions/settings";
 import type { SeoSettings } from "@/lib/validations/settings";
 
@@ -54,7 +54,10 @@ export function SeoSettingsForm() {
   useEffect(() => {
     getSeoSettings().then((result) => {
       if (result.success) {
-        setFormData(result.data);
+        setFormData({
+          ...result.data,
+          twitter_card: (result.data.twitter_card || "summary_large_image") as "summary" | "summary_large_image",
+        });
       }
       setIsLoading(false);
     });
@@ -274,13 +277,12 @@ export function SeoSettingsForm() {
           {/* OG Image */}
           <div className="space-y-2">
             <Label>OG Image</Label>
-            <ImageUploader
-              value={formData.og_image_url}
-              onChange={(url) => updateField("og_image_url", url)}
-              bucket="settings"
-              path="og-images"
+            <SingleImageUploader
+              value={formData.og_image_url || null}
+              onChange={(url: string | null) => updateField("og_image_url", url || "")}
+              bucket="GENERAL"
+              folder="settings/og-images"
               aspectRatio="video"
-              maxSize={2}
             />
             <p className="text-xs text-muted-foreground">
               Recommended: 1200×630 pixels for best display on social platforms

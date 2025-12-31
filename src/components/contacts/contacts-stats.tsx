@@ -4,7 +4,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageSquare, Mail, MailOpen, TrendingUp, Calendar } from "lucide-react";
+import { MessageSquare, Mail, TrendingUp, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { getContactStats } from "@/actions/contacts";

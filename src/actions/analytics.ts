@@ -3,12 +3,11 @@
 
 "use server";
 
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
 import type { ActionResult } from "@/lib/utils/api-helpers";
 import type {
-  AdminActivityLog,
   ActivityLogWithUser,
   DashboardStats,
   ContentStatsOverview,

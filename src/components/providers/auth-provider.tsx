@@ -12,7 +12,7 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type {
   AuthUser,
@@ -44,7 +44,6 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
   const [user, setUser] = useState<AuthUser | null>(initialUser);
   const [isLoading, setIsLoading] = useState(!initialUser);
   const router = useRouter();
-  const pathname = usePathname();
 
   // Fetch user data from admin_users table
   const fetchUser = useCallback(async (userId: string): Promise<AuthUser | null> => {
@@ -79,8 +78,8 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
 
       const roles: UserRole[] = (userRoles || [])
         .map((ur) => ur.role)
-        .filter((r): r is NonNullable<typeof r> => r !== null)
-        .map((r) => ({
+        .filter((r): r is NonNullable<typeof r> => r !== null && !Array.isArray(r))
+        .map((r: any) => ({
           id: r.id,
           name: r.name as UserRoleName,
           display_name: r.display_name,
@@ -105,7 +104,7 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
 
         permissionNames = new Set<PermissionName>(
           (rolePermissions || [])
-            .map((rp) => rp.permission?.name)
+            .map((rp: any) => rp.permission?.name)
             .filter((name): name is PermissionName => name !== null && name !== undefined)
         );
       }

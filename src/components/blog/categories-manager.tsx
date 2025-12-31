@@ -4,7 +4,6 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, FolderOpen, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -70,7 +69,7 @@ function CategoryForm({ category, onSubmit, onCancel, isPending }: CategoryFormP
     name: category?.name || "",
     slug: category?.slug || "",
     description: category?.description || "",
-    color: category?.color || presetColors[0],
+    color: category?.accent_color || presetColors[0],
   });
   const [autoSlug, setAutoSlug] = useState(!category);
 
@@ -193,7 +192,6 @@ function CategoryForm({ category, onSubmit, onCancel, isPending }: CategoryFormP
 // ============================================================================
 
 export function CategoriesManager() {
-  const router = useRouter();
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -321,7 +319,7 @@ export function CategoriesManager() {
                   <div className="flex items-center gap-3">
                     <div
                       className="h-4 w-4 rounded-full"
-                      style={{ backgroundColor: category.color || "#6b7280" }}
+                      style={{ backgroundColor: category.accent_color || "#6b7280" }}
                     />
                     <div>
                       <p className="font-medium">{category.name}</p>
