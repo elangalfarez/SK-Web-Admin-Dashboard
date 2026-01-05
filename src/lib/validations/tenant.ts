@@ -45,19 +45,17 @@ export const tenantSchema = z.object({
     .optional()
     .or(z.literal("")),
   
-  logo_url: z
-    .string()
-    .url("Invalid logo URL")
-    .optional()
-    .or(z.literal(""))
-    .or(z.null()),
-  
-  banner_url: z
-    .string()
-    .url("Invalid banner URL")
-    .optional()
-    .or(z.literal(""))
-    .or(z.null()),
+  logo_url: z.union([
+    z.string().url("Invalid logo URL"),
+    z.literal(""),
+    z.null()
+  ]).optional(),
+
+  banner_url: z.union([
+    z.string().url("Invalid banner URL"),
+    z.literal(""),
+    z.null()
+  ]).optional(),
   
   is_active: z
     .boolean()

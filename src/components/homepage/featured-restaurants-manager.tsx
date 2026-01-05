@@ -17,6 +17,25 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,6 +96,146 @@ const defaultFormData: FormData = {
   start_date: "",
   end_date: "",
 };
+
+// ============================================================================
+// SORTABLE ITEM COMPONENT
+// ============================================================================
+
+interface SortableItemProps {
+  restaurant: FeaturedRestaurantWithTenant;
+  index: number;
+  isPending: boolean;
+  onToggleStatus: (restaurant: FeaturedRestaurantWithTenant) => void;
+  onEdit: (restaurant: FeaturedRestaurantWithTenant) => void;
+  onDelete: (restaurant: FeaturedRestaurantWithTenant) => void;
+}
+
+function SortableRestaurantItem({
+  restaurant,
+  index,
+  isPending,
+  onToggleStatus,
+  onEdit,
+  onDelete,
+}: SortableItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: restaurant.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const logo = restaurant.featured_image_url || restaurant.tenant?.logo_url;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center gap-3 rounded-lg border border-border p-3 bg-card transition-all",
+        !restaurant.is_active && "opacity-50",
+        isDragging && "opacity-50 scale-105 shadow-lg z-50 ring-2 ring-primary"
+      )}
+    >
+      {/* Drag Handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className={cn(
+          "flex items-center justify-center cursor-grab active:cursor-grabbing",
+          "hover:bg-muted rounded p-2 transition-colors",
+          isPending && "cursor-not-allowed opacity-50"
+        )}
+      >
+        <GripVertical className="h-5 w-5 text-muted-foreground" />
+      </div>
+
+      {/* Logo */}
+      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted">
+        {logo && typeof logo === 'string' ? (
+          <img
+            src={logo}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <UtensilsCrossed className="h-6 w-6 text-muted-foreground" />
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <p className="font-medium truncate">
+            {restaurant.tenant?.name || "Unknown Restaurant"}
+          </p>
+          {!restaurant.is_active && (
+            <Badge variant="inactive" className="text-xs">
+              Disabled
+            </Badge>
+          )}
+          {restaurant.highlight_text && (
+            <Badge variant="default" className="text-xs">
+              <Star className="mr-1 h-3 w-3" />
+              {restaurant.highlight_text}
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-xs text-muted-foreground">
+            Order: {index + 1}
+          </span>
+          {restaurant.start_date && (
+            <span className="text-xs text-muted-foreground">
+              <Calendar className="inline h-3 w-3 mr-1" />
+              {formatDate(restaurant.start_date)}
+              {restaurant.end_date && ` - ${formatDate(restaurant.end_date)}`}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onToggleStatus(restaurant)}
+          disabled={isPending}
+        >
+          {restaurant.is_active ? (
+            <PowerOff className="h-4 w-4" />
+          ) : (
+            <Power className="h-4 w-4" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onEdit(restaurant)}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onDelete(restaurant)}
+        >
+          <Trash2 className="h-4 w-4 text-destructive" />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 // ============================================================================
 // RESTAURANT FORM
@@ -302,6 +461,7 @@ export function FeaturedRestaurantsManager() {
   const [items, setItems] = useState<FeaturedRestaurantWithTenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<FeaturedRestaurantWithTenant | null>(
@@ -309,6 +469,18 @@ export function FeaturedRestaurantsManager() {
   );
   const [deletingItem, setDeletingItem] = useState<FeaturedRestaurantWithTenant | null>(
     null
+  );
+
+  // Configure sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required to start drag (prevents accidental drags)
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
 
   // Fetch items
@@ -384,25 +556,30 @@ export function FeaturedRestaurantsManager() {
     });
   };
 
-  // Move item up
-  const handleMoveUp = (index: number) => {
-    if (index === 0) return;
-    const newItems = [...items];
-    [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
-    saveOrder(newItems);
+  // Handle drag start
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
   };
 
-  // Move item down
-  const handleMoveDown = (index: number) => {
-    if (index === items.length - 1) return;
-    const newItems = [...items];
-    [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
-    saveOrder(newItems);
-  };
+  // Handle drag end
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-  // Save new order
-  const saveOrder = async (newItems: FeaturedRestaurantWithTenant[]) => {
+    setActiveId(null);
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = items.findIndex((item) => item.id === active.id);
+    const newIndex = items.findIndex((item) => item.id === over.id);
+
+    const newItems = arrayMove(items, oldIndex, newIndex);
+
+    // Optimistically update UI
     setItems(newItems);
+
+    // Save to backend
     const orderData = newItems.map((item, index) => ({
       id: item.id,
       sort_order: index,
@@ -413,6 +590,8 @@ export function FeaturedRestaurantsManager() {
       if (!result.success) {
         toast.error(result.error);
         fetchItems(); // Revert on error
+      } else {
+        toast.success("Order updated successfully");
       }
     });
   };
@@ -429,6 +608,8 @@ export function FeaturedRestaurantsManager() {
     );
   }
 
+  const activeItem = activeId ? items.find((item) => item.id === activeId) : null;
+
   return (
     <>
       <Card>
@@ -439,7 +620,7 @@ export function FeaturedRestaurantsManager() {
               Featured Restaurants
             </CardTitle>
             <CardDescription>
-              Highlight restaurants on the homepage (max 6 recommended)
+              Highlight restaurants on the homepage (max 6 recommended) - Drag to reorder
             </CardDescription>
           </div>
           <Button onClick={() => setShowCreateDialog(true)}>
@@ -455,51 +636,41 @@ export function FeaturedRestaurantsManager() {
               <p className="text-sm">Add restaurants to highlight on the homepage.</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {items.map((item, index) => {
-                const image =
-                  item.featured_image_url || item.tenant?.logo_url;
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={items.map((item) => item.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2">
+                  {items.map((item, index) => (
+                    <SortableRestaurantItem
+                      key={item.id}
+                      restaurant={item}
+                      index={index}
+                      isPending={isPending}
+                      onToggleStatus={handleToggleStatus}
+                      onEdit={setEditingItem}
+                      onDelete={setDeletingItem}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
 
-                return (
-                  <div
-                    key={item.id}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg border border-border p-3",
-                      !item.is_active && "opacity-50"
-                    )}
-                  >
-                    {/* Drag Handle & Order */}
-                    <div className="flex flex-col items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleMoveUp(index)}
-                        disabled={index === 0 || isPending}
-                      >
-                        <span className="sr-only">Move up</span>
-                        <svg className="h-3 w-3" viewBox="0 0 10 6">
-                          <path d="M1 5L5 1L9 5" stroke="currentColor" fill="none" />
-                        </svg>
-                      </Button>
-                      <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleMoveDown(index)}
-                        disabled={index === items.length - 1 || isPending}
-                      >
-                        <span className="sr-only">Move down</span>
-                        <svg className="h-3 w-3" viewBox="0 0 10 6">
-                          <path d="M1 1L5 5L9 1" stroke="currentColor" fill="none" />
-                        </svg>
-                      </Button>
-                    </div>
-
-                    {/* Image */}
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
-                      {image ? (
+              {/* Drag Overlay for better visual feedback */}
+              <DragOverlay>
+                {activeItem ? (
+                  <div className="flex items-center gap-3 rounded-lg border border-border p-3 bg-card shadow-2xl ring-2 ring-primary rotate-2">
+                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted">
+                      {(activeItem.featured_image_url || activeItem.tenant?.logo_url) &&
+                      typeof (activeItem.featured_image_url || activeItem.tenant?.logo_url) === 'string' ? (
                         <img
-                          src={image}
+                          src={activeItem.featured_image_url || activeItem.tenant?.logo_url || ''}
                           alt=""
                           className="h-full w-full object-cover"
                         />
@@ -509,70 +680,15 @@ export function FeaturedRestaurantsManager() {
                         </div>
                       )}
                     </div>
-
-                    {/* Content */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">
-                          {item.tenant?.name || "Unknown Restaurant"}
-                        </p>
-                        {item.highlight_text && (
-                          <Badge variant="success" className="text-xs">
-                            <Star className="mr-1 h-3 w-3" />
-                            {item.highlight_text}
-                          </Badge>
-                        )}
-                        {!item.is_active && (
-                          <Badge variant="inactive" className="text-xs">
-                            Disabled
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
-                        {item.featured_description || "No description"}
+                      <p className="font-medium truncate">
+                        {activeItem.tenant?.name || "Unknown Restaurant"}
                       </p>
-                      {(item.start_date || item.end_date) && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {item.start_date && formatDate(item.start_date)}
-                          {item.start_date && item.end_date && " - "}
-                          {item.end_date && formatDate(item.end_date)}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleToggleStatus(item)}
-                        disabled={isPending}
-                      >
-                        {item.is_active ? (
-                          <PowerOff className="h-4 w-4" />
-                        ) : (
-                          <Power className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => setEditingItem(item)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => setDeletingItem(item)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
           )}
         </CardContent>
       </Card>

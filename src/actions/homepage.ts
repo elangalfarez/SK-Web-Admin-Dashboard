@@ -78,11 +78,23 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
             // Normalize the data structure
             // Cast to any since refData shape varies by content_type
             const data = refData as any;
+
+            // Safely extract image URL - ensure it's always a string or null
+            let imageUrl = null;
+            if (data.image_url && typeof data.image_url === 'string') {
+              imageUrl = data.image_url;
+            } else if (data.logo_url && typeof data.logo_url === 'string') {
+              imageUrl = data.logo_url;
+            } else if (Array.isArray(data.images) && data.images.length > 0) {
+              // For events, images is an array of strings
+              imageUrl = typeof data.images[0] === 'string' ? data.images[0] : null;
+            }
+
             reference_data = {
               id: data.id,
               title: data.title,
               name: data.name,
-              image_url: data.image_url || data.logo_url || (data.images?.[0] ?? null),
+              image_url: imageUrl,
               logo_url: data.logo_url,
             };
           }
@@ -138,11 +150,23 @@ export async function getWhatsOnItem(id: string): Promise<ActionResult<WhatsOnRe
           // Normalize the data structure
           // Cast to any since refData shape varies by content_type
           const resolvedData = refData as any;
+
+          // Safely extract image URL - ensure it's always a string or null
+          let imageUrl = null;
+          if (resolvedData.image_url && typeof resolvedData.image_url === 'string') {
+            imageUrl = resolvedData.image_url;
+          } else if (resolvedData.logo_url && typeof resolvedData.logo_url === 'string') {
+            imageUrl = resolvedData.logo_url;
+          } else if (Array.isArray(resolvedData.images) && resolvedData.images.length > 0) {
+            // For events, images is an array of strings
+            imageUrl = typeof resolvedData.images[0] === 'string' ? resolvedData.images[0] : null;
+          }
+
           reference_data = {
             id: resolvedData.id,
             title: resolvedData.title,
             name: resolvedData.name,
-            image_url: resolvedData.image_url || resolvedData.logo_url || (resolvedData.images?.[0] ?? null),
+            image_url: imageUrl,
             logo_url: resolvedData.logo_url,
           };
         }
@@ -360,7 +384,24 @@ export async function reorderWhatsOnItems(
 
     const supabase = await createAdminClient();
 
-    // Update each item's sort order
+    // To avoid unique constraint violations on sort_order during reordering,
+    // we use a two-phase approach:
+    // 1. Set all items to temporary negative values
+    // 2. Update to final values
+
+    // Phase 1: Set to temporary negative values
+    for (let i = 0; i < items.length; i++) {
+      const { error } = await supabase
+        .from("whats_on")
+        .update({ sort_order: -(i + 1) })
+        .eq("id", items[i].id);
+
+      if (error) {
+        return handleSupabaseError(error);
+      }
+    }
+
+    // Phase 2: Set to final values
     for (const item of items) {
       const { error } = await supabase
         .from("whats_on")
@@ -769,7 +810,24 @@ export async function reorderFeaturedRestaurants(
 
     const supabase = await createAdminClient();
 
-    // Update each item's sort order
+    // To avoid unique constraint violations on sort_order during reordering,
+    // we use a two-phase approach:
+    // 1. Set all items to temporary negative values
+    // 2. Update to final values
+
+    // Phase 1: Set to temporary negative values
+    for (let i = 0; i < items.length; i++) {
+      const { error } = await supabase
+        .from("featured_restaurants")
+        .update({ sort_order: -(i + 1) })
+        .eq("id", items[i].id);
+
+      if (error) {
+        return handleSupabaseError(error);
+      }
+    }
+
+    // Phase 2: Set to final values
     for (const item of items) {
       const { error } = await supabase
         .from("featured_restaurants")
