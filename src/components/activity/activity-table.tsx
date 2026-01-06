@@ -106,6 +106,10 @@ export function ActivityTable() {
       });
       if (result.success) {
         setData(result.data);
+      } else {
+        console.error("Failed to fetch activity logs:", result.error);
+        // Still show empty state but log the error
+        setData({ data: [], total: 0, page: 1, perPage: 20, totalPages: 0 });
       }
     });
   };

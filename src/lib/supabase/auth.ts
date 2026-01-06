@@ -435,8 +435,8 @@ export async function logActivity(
 ): Promise<void> {
   try {
     const supabase = await createAdminClient();
-    
-    await supabase.from("admin_activity_logs").insert({
+
+    const { error } = await supabase.from("admin_activity_logs").insert({
       user_id: userId,
       action,
       module,
@@ -447,7 +447,13 @@ export async function logActivity(
       new_values: options?.newValues,
       metadata: options?.metadata || {},
     });
+
+    if (error) {
+      console.error("Log activity error:", error);
+      console.error("Activity details:", { userId, action, module, options });
+    }
   } catch (error) {
     console.error("Log activity error:", error);
+    console.error("Activity details:", { userId, action, module, options });
   }
 }

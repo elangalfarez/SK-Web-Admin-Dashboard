@@ -14,6 +14,33 @@ import type { ActionResult } from "@/lib/utils/api-helpers";
 import type { Event, PaginatedResult } from "@/types/database";
 
 // ============================================================================
+// HELPERS
+// ============================================================================
+
+/**
+ * Normalize event data to ensure images field contains only string URLs
+ * This handles cases where legacy data might have objects instead of strings
+ */
+function normalizeEventData(event: Event): Event {
+  return {
+    ...event,
+    images: Array.isArray(event.images)
+      ? event.images.map((img) => {
+          // If it's already a string, return as-is
+          if (typeof img === "string") return img;
+          // If it's an object with a url property, extract the url
+          if (typeof img === "object" && img !== null && "url" in img) {
+            return String((img as { url: unknown }).url);
+          }
+          // Fallback: convert to string
+          return String(img);
+        })
+      : [],
+    tags: Array.isArray(event.tags) ? event.tags : [],
+  };
+}
+
+// ============================================================================
 // GET EVENTS (with pagination and filters)
 // ============================================================================
 
@@ -87,8 +114,11 @@ export async function getEvents(
       return handleSupabaseError(error);
     }
 
+    // Normalize event data to handle legacy image formats
+    const normalizedData = (data || []).map(normalizeEventData);
+
     return successResponse({
-      data: data || [],
+      data: normalizedData,
       total: count || 0,
       page,
       perPage,
@@ -118,7 +148,10 @@ export async function getEvent(id: string): Promise<ActionResult<Event>> {
       return handleSupabaseError(error);
     }
 
-    return successResponse(data);
+    // Normalize event data to handle legacy image formats
+    const normalizedData = normalizeEventData(data);
+
+    return successResponse(normalizedData);
   } catch (error) {
     console.error("Get event error:", error);
     return errorResponse("Failed to fetch event");
@@ -143,7 +176,10 @@ export async function getEventBySlug(slug: string): Promise<ActionResult<Event>>
       return handleSupabaseError(error);
     }
 
-    return successResponse(data);
+    // Normalize event data to handle legacy image formats
+    const normalizedData = normalizeEventData(data);
+
+    return successResponse(normalizedData);
   } catch (error) {
     console.error("Get event by slug error:", error);
     return errorResponse("Failed to fetch event");

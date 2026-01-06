@@ -3,7 +3,7 @@
 
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
 import type { ActionResult } from "@/lib/utils/api-helpers";
@@ -57,7 +57,7 @@ export async function getActivityLogs(
       return errorResponse("Unauthorized");
     }
 
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
     const {
       page = 1,
       perPage = 20,
@@ -151,7 +151,7 @@ export async function getActivityLog(
       return errorResponse("Unauthorized");
     }
 
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
 
     const { data, error } = await supabase
       .from("admin_activity_logs")
@@ -363,7 +363,7 @@ export async function getRecentActivity(
   limit: number = 10
 ): Promise<ActionResult<ActivityLogWithUser[]>> {
   try {
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
 
     const { data, error } = await supabase
       .from("admin_activity_logs")
@@ -400,7 +400,7 @@ export async function getActivityByDay(
   days: number = 30
 ): Promise<ActionResult<{ date: string; count: number }[]>> {
   try {
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -451,7 +451,7 @@ export async function getActivityByModule(): Promise<
   ActionResult<{ module: string; count: number }[]>
 > {
   try {
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
 
     const { data, error } = await supabase
       .from("admin_activity_logs")
