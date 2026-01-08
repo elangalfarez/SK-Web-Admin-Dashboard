@@ -86,8 +86,11 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
             } else if (data.logo_url && typeof data.logo_url === 'string') {
               imageUrl = data.logo_url;
             } else if (Array.isArray(data.images) && data.images.length > 0) {
-              // For events, images is an array of strings
-              imageUrl = typeof data.images[0] === 'string' ? data.images[0] : null;
+              // For events, images can be strings or objects with url property
+              const firstImage = data.images[0];
+              imageUrl = typeof firstImage === 'string'
+                ? firstImage
+                : (firstImage && typeof firstImage === 'object' && 'url' in firstImage ? firstImage.url : null);
             }
 
             reference_data = {
@@ -158,8 +161,11 @@ export async function getWhatsOnItem(id: string): Promise<ActionResult<WhatsOnRe
           } else if (resolvedData.logo_url && typeof resolvedData.logo_url === 'string') {
             imageUrl = resolvedData.logo_url;
           } else if (Array.isArray(resolvedData.images) && resolvedData.images.length > 0) {
-            // For events, images is an array of strings
-            imageUrl = typeof resolvedData.images[0] === 'string' ? resolvedData.images[0] : null;
+            // For events, images can be strings or objects with url property
+            const firstImage = resolvedData.images[0];
+            imageUrl = typeof firstImage === 'string'
+              ? firstImage
+              : (firstImage && typeof firstImage === 'object' && 'url' in firstImage ? firstImage.url : null);
           }
 
           reference_data = {

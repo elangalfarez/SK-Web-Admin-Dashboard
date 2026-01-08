@@ -50,7 +50,7 @@ export async function uploadFile(
 
     const supabase = createClient();
     const bucketName = STORAGE_BUCKETS[bucket];
-    
+
     // Generate unique file name if not provided
     const finalFileName = fileName || generateFileName(file);
     const filePath = folder ? `${folder}/${finalFileName}` : finalFileName;

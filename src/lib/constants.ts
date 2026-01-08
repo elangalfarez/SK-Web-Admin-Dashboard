@@ -58,14 +58,17 @@ export const UPLOAD = {
 
 /**
  * Supabase storage buckets
+ * IMPORTANT: These must match the exact bucket names in Supabase Storage
  */
 export const STORAGE_BUCKETS = {
-  EVENTS: "events",
-  POSTS: "posts",
-  PROMOTIONS: "promotions",
-  TENANTS: "tenants",
-  AVATARS: "avatars",
-  GENERAL: "general",
+  EVENTS: "Events Photos",
+  POSTS: "Blog Photos",
+  PROMOTIONS: "Promotions Photos",
+  TENANTS: "Tenants Photo",
+  AVATARS: "SK Assets",
+  GENERAL: "SK Assets",
+  FACILITIES: "Facilities",
+  RECEIPTS: "receipts",
 } as const;
 
 /**

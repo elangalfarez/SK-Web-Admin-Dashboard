@@ -67,7 +67,13 @@ function EventRow({ event, onDelete }: EventRowProps) {
   const [isPending, startTransition] = useTransition();
 
   const dateStatus = getDateStatus(event.start_at, event.end_at || undefined);
-  const coverImage = event.images?.[0];
+
+  // Extract cover image URL (handle both string and object formats)
+  const coverImage = event.images?.[0]
+    ? typeof event.images[0] === 'string'
+      ? event.images[0]
+      : event.images[0]?.url
+    : undefined;
 
   const handleTogglePublish = () => {
     startTransition(async () => {

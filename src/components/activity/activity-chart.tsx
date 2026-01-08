@@ -76,7 +76,7 @@ export function ActivityChart({ data, title = "Activity (Last 14 Days)" }: Activ
               {chartData.map((item) => (
                 <div
                   key={item.date}
-                  className="group relative flex flex-1 flex-col items-center"
+                  className="group relative flex h-full flex-1 flex-col items-center justify-end"
                 >
                   {/* Tooltip */}
                   <div className="absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 rounded bg-popover px-2 py-1 text-xs shadow-md group-hover:block">

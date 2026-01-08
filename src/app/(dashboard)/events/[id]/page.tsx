@@ -112,7 +112,7 @@ export default async function EventDetailPage({
           {event.images && event.images.length > 0 && (
             <div className="aspect-video overflow-hidden rounded-lg border border-border">
               <img
-                src={event.images[0]}
+                src={typeof event.images[0] === 'string' ? event.images[0] : event.images[0]?.url}
                 alt={event.title}
                 className="h-full w-full object-cover"
               />
@@ -128,7 +128,7 @@ export default async function EventDetailPage({
                   className="aspect-video overflow-hidden rounded-lg border border-border"
                 >
                   <img
-                    src={image}
+                    src={typeof image === 'string' ? image : image?.url}
                     alt={`${event.title} ${index + 2}`}
                     className="h-full w-full object-cover"
                   />

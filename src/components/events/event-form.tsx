@@ -141,6 +141,21 @@ export function EventForm({ event, mode }: EventFormProps) {
 
     startTransition(async () => {
       try {
+        // Transform images array to proper format with url, alt, and caption
+        // Check if images are already objects (edit mode) or just strings (create mode)
+        const imagesWithMetadata = formData.images.map((item, index) => {
+          // If item is already an object with url property, return as-is
+          if (typeof item === 'object' && item !== null && 'url' in item) {
+            return item;
+          }
+          // If item is a string (URL), convert to object format
+          return {
+            url: item,
+            alt: formData.title || "Event image",
+            caption: index === 0 ? "Cover image" : `Image ${index + 1}`,
+          };
+        });
+
         // Create FormData object
         const data = new FormData();
         data.set("title", formData.title);
@@ -150,7 +165,7 @@ export function EventForm({ event, mode }: EventFormProps) {
         data.set("start_at", formData.start_at);
         data.set("end_at", formData.end_at);
         data.set("venue", formData.venue);
-        data.set("images", JSON.stringify(formData.images));
+        data.set("images", JSON.stringify(imagesWithMetadata));
         data.set("tags", JSON.stringify(formData.tags));
         data.set("is_published", String(formData.is_published));
         data.set("is_featured", String(formData.is_featured));

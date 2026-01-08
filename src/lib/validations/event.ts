@@ -46,7 +46,16 @@ export const eventSchema = z.object({
     .or(z.literal("")),
   
   images: z
-    .array(z.string().url("Invalid image URL"))
+    .array(
+      z.union([
+        z.string().url("Invalid image URL"), // Support legacy string format
+        z.object({
+          url: z.string().url("Invalid image URL"),
+          alt: z.string().optional(),
+          caption: z.string().optional(),
+        }),
+      ])
+    )
     .default([]),
   
   tags: z

@@ -18,22 +18,28 @@ import type { Event, PaginatedResult } from "@/types/database";
 // ============================================================================
 
 /**
- * Normalize event data to ensure images field contains only string URLs
- * This handles cases where legacy data might have objects instead of strings
+ * Normalize event data to ensure images and tags are arrays
+ * Converts legacy string-only images to proper object format
  */
 function normalizeEventData(event: Event): Event {
   return {
     ...event,
     images: Array.isArray(event.images)
       ? event.images.map((img) => {
-          // If it's already a string, return as-is
-          if (typeof img === "string") return img;
-          // If it's an object with a url property, extract the url
+          // If it's already an object with url property, return as-is
           if (typeof img === "object" && img !== null && "url" in img) {
-            return String((img as { url: unknown }).url);
+            return img;
           }
-          // Fallback: convert to string
-          return String(img);
+          // If it's a string (legacy format), convert to object
+          if (typeof img === "string") {
+            return {
+              url: img,
+              alt: event.title || "Event image",
+              caption: "Event image",
+            };
+          }
+          // Fallback: return as-is
+          return img;
         })
       : [],
     tags: Array.isArray(event.tags) ? event.tags : [],
