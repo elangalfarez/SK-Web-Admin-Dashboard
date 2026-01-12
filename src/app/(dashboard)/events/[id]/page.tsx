@@ -18,7 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getEvent } from "@/actions/events";
-import { formatDisplayDateTime, getDateStatus } from "@/lib/utils/format-date";
+import { getDateStatus } from "@/lib/utils/format-date";
+import { formatInJakartaTime } from "@/lib/utils/timezone";
 
 // ============================================================================
 // METADATA
@@ -181,7 +182,7 @@ export default async function EventDetailPage({
                 <div>
                   <p className="font-medium">Start</p>
                   <p className="text-sm text-muted-foreground">
-                    {formatDisplayDateTime(event.start_at)}
+                    {formatInJakartaTime(event.start_at, "dd MMM yyyy, HH:mm")} WIB
                   </p>
                 </div>
               </div>
@@ -191,7 +192,7 @@ export default async function EventDetailPage({
                   <div>
                     <p className="font-medium">End</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatDisplayDateTime(event.end_at)}
+                      {formatInJakartaTime(event.end_at, "dd MMM yyyy, HH:mm")} WIB
                     </p>
                   </div>
                 </div>

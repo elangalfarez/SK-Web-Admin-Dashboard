@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatDisplayDate, getDateStatus } from "@/lib/utils/format-date";
+import { getDateStatus } from "@/lib/utils/format-date";
+import { formatInJakartaTime } from "@/lib/utils/timezone";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -139,8 +140,8 @@ function EventRow({ event, onDelete }: EventRowProps) {
             <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
-                {formatDisplayDate(event.start_at)}
-                {event.end_at && ` - ${formatDisplayDate(event.end_at)}`}
+                {formatInJakartaTime(event.start_at, "dd MMM yyyy")}
+                {event.end_at && ` - ${formatInJakartaTime(event.end_at, "dd MMM yyyy")}`}
               </span>
               {event.venue && (
                 <span className="flex items-center gap-1">

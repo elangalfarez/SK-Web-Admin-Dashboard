@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Calendar, MapPin, Save, ArrowLeft, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { generateSlug } from "@/lib/utils/slug";
+import { convertUTCToLocal, convertLocalToUTC, APP_TIMEZONE } from "@/lib/utils/timezone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,8 +59,9 @@ export function EventForm({ event, mode }: EventFormProps) {
     slug: event?.slug || "",
     summary: event?.summary || "",
     body: event?.body || "",
-    start_at: event?.start_at ? event.start_at.slice(0, 16) : "",
-    end_at: event?.end_at ? event.end_at.slice(0, 16) : "",
+    // Convert UTC times from database to Asia/Jakarta time for form display
+    start_at: event?.start_at ? convertUTCToLocal(event.start_at) : "",
+    end_at: event?.end_at ? convertUTCToLocal(event.end_at) : "",
     venue: event?.venue || "",
     images: event?.images || [],
     tags: event?.tags || [],
@@ -162,8 +164,9 @@ export function EventForm({ event, mode }: EventFormProps) {
         data.set("slug", formData.slug);
         data.set("summary", formData.summary);
         data.set("body", formData.body);
-        data.set("start_at", formData.start_at);
-        data.set("end_at", formData.end_at);
+        // Convert Asia/Jakarta times to UTC for storage in database
+        data.set("start_at", convertLocalToUTC(formData.start_at));
+        data.set("end_at", formData.end_at ? convertLocalToUTC(formData.end_at) : "");
         data.set("venue", formData.venue);
         data.set("images", JSON.stringify(imagesWithMetadata));
         data.set("tags", JSON.stringify(formData.tags));
@@ -342,6 +345,9 @@ export function EventForm({ event, mode }: EventFormProps) {
                   onChange={(e) => updateField("start_at", e.target.value)}
                   error={!!errors.start_at}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Timezone: {APP_TIMEZONE} (GMT+7)
+                </p>
                 {errors.start_at && (
                   <p className="text-sm text-destructive">{errors.start_at}</p>
                 )}
@@ -357,6 +363,9 @@ export function EventForm({ event, mode }: EventFormProps) {
                   onChange={(e) => updateField("end_at", e.target.value)}
                   error={!!errors.end_at}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Timezone: {APP_TIMEZONE} (GMT+7)
+                </p>
                 {errors.end_at && (
                   <p className="text-sm text-destructive">{errors.end_at}</p>
                 )}
