@@ -74,6 +74,12 @@ export interface AdminActivityLog {
 // EVENTS
 // ============================================================================
 
+export interface EventImage {
+  url: string;
+  alt: string;
+  caption: string;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -85,7 +91,7 @@ export interface Event {
   is_published: boolean;
   is_featured: boolean;
   venue: string | null;
-  images: string[]; // JSONB array of image URLs
+  images: Array<string | EventImage>; // JSONB array of image URLs or image objects
   tags: string[]; // JSONB array of tags
   summary: string | null;
   metadata: Record<string, unknown>;
@@ -537,7 +543,7 @@ export interface EventFormData {
   start_at: string;
   end_at: string;
   venue: string;
-  images: string[];
+  images: Array<string | EventImage>;
   tags: string[];
   is_published: boolean;
   is_featured: boolean;

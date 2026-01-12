@@ -19,7 +19,7 @@ import { ImageUploader } from "@/components/shared/image-uploader";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { TagInput } from "@/components/shared/tag-input";
 import { createEvent, updateEvent, getEventTags } from "@/actions/events";
-import type { Event } from "@/types/database";
+import type { Event, EventImage } from "@/types/database";
 
 // ============================================================================
 // TYPES
@@ -38,10 +38,28 @@ interface FormData {
   start_at: string;
   end_at: string;
   venue: string;
-  images: string[];
+  images: Array<string | EventImage>;
   tags: string[];
   is_published: boolean;
   is_featured: boolean;
+}
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+
+/**
+ * Convert EventImage objects to string URLs for the ImageUploader
+ */
+function imagesToUrls(images: Array<string | EventImage>): string[] {
+  return images.map((img) => (typeof img === "string" ? img : img.url));
+}
+
+/**
+ * Convert string URLs to EventImage objects (or keep as strings if needed)
+ */
+function urlsToImages(urls: string[]): Array<string | EventImage> {
+  return urls;
 }
 
 // ============================================================================
@@ -314,8 +332,8 @@ export function EventForm({ event, mode }: EventFormProps) {
             </CardHeader>
             <CardContent>
               <ImageUploader
-                value={formData.images}
-                onChange={(images) => updateField("images", images)}
+                value={imagesToUrls(formData.images)}
+                onChange={(urls) => updateField("images", urlsToImages(urls))}
                 bucket="EVENTS"
                 folder="events"
                 maxImages={10}

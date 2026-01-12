@@ -10,7 +10,8 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(git ls-tree:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(if exist \".next\" rmdir /s /q \".next\")"
     ]
   }
 }
