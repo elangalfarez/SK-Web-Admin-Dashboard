@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { deleteEvent, toggleEventPublish, toggleEventFeatured } from "@/actions/events";
 import type { Event } from "@/types/database";
+import { RequirePermission } from "@/components/providers/auth-provider";
 
 // ============================================================================
 // TYPES
@@ -196,47 +197,55 @@ function EventRow({ event, onDelete }: EventRowProps) {
                 View
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/events/${event.id}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </DropdownMenuItem>
+            <RequirePermission module="events" action="edit">
+              <DropdownMenuItem asChild>
+                <Link href={`/events/${event.id}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
+              </DropdownMenuItem>
+            </RequirePermission>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleTogglePublish}>
-              {event.is_published ? (
-                <>
-                  <GlobeLock className="mr-2 h-4 w-4" />
-                  Unpublish
-                </>
-              ) : (
-                <>
-                  <Globe className="mr-2 h-4 w-4" />
-                  Publish
-                </>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleToggleFeatured}>
-              {event.is_featured ? (
-                <>
-                  <StarOff className="mr-2 h-4 w-4" />
-                  Remove Featured
-                </>
-              ) : (
-                <>
-                  <Star className="mr-2 h-4 w-4" />
-                  Mark Featured
-                </>
-              )}
-            </DropdownMenuItem>
+            <RequirePermission module="events" action="publish">
+              <DropdownMenuItem onClick={handleTogglePublish}>
+                {event.is_published ? (
+                  <>
+                    <GlobeLock className="mr-2 h-4 w-4" />
+                    Unpublish
+                  </>
+                ) : (
+                  <>
+                    <Globe className="mr-2 h-4 w-4" />
+                    Publish
+                  </>
+                )}
+              </DropdownMenuItem>
+            </RequirePermission>
+            <RequirePermission module="events" action="edit">
+              <DropdownMenuItem onClick={handleToggleFeatured}>
+                {event.is_featured ? (
+                  <>
+                    <StarOff className="mr-2 h-4 w-4" />
+                    Remove Featured
+                  </>
+                ) : (
+                  <>
+                    <Star className="mr-2 h-4 w-4" />
+                    Mark Featured
+                  </>
+                )}
+              </DropdownMenuItem>
+            </RequirePermission>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDelete(event.id)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
+            <RequirePermission module="events" action="delete">
+              <DropdownMenuItem
+                onClick={() => onDelete(event.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </RequirePermission>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

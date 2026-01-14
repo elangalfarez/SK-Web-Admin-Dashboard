@@ -9,6 +9,7 @@ import { logActivity } from "@/lib/supabase/auth";
 import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
 import { vipTierSchema, vipBenefitSchema, updateTierBenefitsSchema } from "@/lib/validations/vip";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 import type { ActionResult } from "@/lib/utils/api-helpers";
 import type { VipTier, VipBenefit, VipTierWithBenefits } from "@/types/database";
 
@@ -18,6 +19,21 @@ import type { VipTier, VipBenefit, VipTierWithBenefits } from "@/types/database"
 
 export async function getVipTiers(): Promise<ActionResult<VipTier[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view VIP tiers");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -42,6 +58,21 @@ export async function getVipTiers(): Promise<ActionResult<VipTier[]>> {
 
 export async function getVipTier(id: string): Promise<ActionResult<VipTierWithBenefits>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view VIP tiers");
+    }
+
     const supabase = await createClient();
 
     // Get tier
@@ -95,6 +126,21 @@ export async function getVipTier(id: string): Promise<ActionResult<VipTierWithBe
 
 export async function getVipTiersWithBenefits(): Promise<ActionResult<VipTierWithBenefits[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view VIP tiers");
+    }
+
     const supabase = await createClient();
 
     // Get all tiers
@@ -156,6 +202,16 @@ export async function createVipTier(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "create"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create VIP tiers");
     }
 
     // Parse form data
@@ -243,6 +299,16 @@ export async function updateVipTier(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit VIP tiers");
     }
 
     // Parse form data
@@ -333,6 +399,16 @@ export async function deleteVipTier(id: string): Promise<ActionResult<void>> {
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete VIP tiers");
+    }
+
     const supabase = await createAdminClient();
 
     // Get tier for logging
@@ -374,6 +450,21 @@ export async function deleteVipTier(id: string): Promise<ActionResult<void>> {
 
 export async function getVipBenefits(): Promise<ActionResult<VipBenefit[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view VIP benefits");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -403,6 +494,16 @@ export async function createVipBenefit(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "create"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create VIP benefits");
     }
 
     // Parse form data
@@ -472,6 +573,16 @@ export async function updateVipBenefit(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit VIP benefits");
+    }
+
     // Parse form data
     const rawData = {
       name: formData.get("name") as string,
@@ -538,6 +649,16 @@ export async function deleteVipBenefit(id: string): Promise<ActionResult<void>> 
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete VIP benefits");
+    }
+
     const supabase = await createAdminClient();
 
     // Check if benefit is used by any tiers
@@ -596,6 +717,16 @@ export async function updateTierBenefits(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit VIP tier benefits");
     }
 
     const supabase = await createAdminClient();
@@ -668,6 +799,16 @@ export async function toggleVipTierStatus(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "dashboard",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit VIP tier status");
     }
 
     const supabase = await createAdminClient();

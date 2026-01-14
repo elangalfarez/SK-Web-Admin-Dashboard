@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -32,6 +32,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useTheme } from "@/components/providers/theme-provider";
 import { logout } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
+import { filterNavigationByPermissions } from "@/lib/utils/permissions";
 
 // ============================================================================
 // NAVIGATION ITEMS
@@ -108,6 +109,16 @@ export function Sidebar({ className }: SidebarProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Filter navigation groups based on user permissions
+  const visibleNavGroups = useMemo(() => {
+    return navGroups
+      .map((group) => ({
+        ...group,
+        items: filterNavigationByPermissions(group.items, user),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [user]);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -191,7 +202,7 @@ export function Sidebar({ className }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin">
-          {navGroups.map((group) => (
+          {visibleNavGroups.map((group) => (
             <div key={group.title} className="mb-6">
               {!isCollapsed && (
                 <h3 className="mb-2 px-3 text-xs font-medium uppercase tracking-wider text-sidebar-foreground/50">

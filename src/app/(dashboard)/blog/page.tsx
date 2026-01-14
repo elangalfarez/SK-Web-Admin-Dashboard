@@ -10,6 +10,10 @@ import { BlogTable } from "@/components/blog/blog-table";
 import { BlogFilters } from "@/components/blog/blog-filters";
 import { getPosts } from "@/actions/blog";
 
+// Force dynamic rendering to ensure fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // ============================================================================
 // LOADING SKELETON
 // ============================================================================

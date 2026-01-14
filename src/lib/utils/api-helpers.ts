@@ -29,10 +29,18 @@ export function errorResponse(error: string, code?: string): ActionResult<never>
  */
 export function handleSupabaseError(error: unknown): ActionResult<never> {
   console.error("Supabase error:", error);
-  
+  console.error("Full error object:", JSON.stringify(error, null, 2));
+
   if (error && typeof error === "object" && "code" in error) {
-    const supabaseError = error as { code: string; message: string };
-    
+    const supabaseError = error as { code: string; message: string; details?: string; hint?: string };
+
+    console.error("Supabase error details:", {
+      code: supabaseError.code,
+      message: supabaseError.message,
+      details: supabaseError.details,
+      hint: supabaseError.hint
+    });
+
     // Map common Supabase error codes to user-friendly messages
     switch (supabaseError.code) {
       case "23505": // Unique violation
@@ -47,13 +55,13 @@ export function handleSupabaseError(error: unknown): ActionResult<never> {
         return errorResponse(ERROR_MESSAGES.GENERIC, supabaseError.code);
     }
   }
-  
+
   if (error instanceof Error) {
-    // Don't expose internal error messages to users
-    console.error("Error details:", error.message);
+    // Log detailed error for debugging (server-side only)
+    console.error("Error details:", error.message, error.stack);
     return errorResponse(ERROR_MESSAGES.GENERIC);
   }
-  
+
   return errorResponse(ERROR_MESSAGES.GENERIC);
 }
 

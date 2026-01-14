@@ -9,6 +9,7 @@ import { logActivity } from "@/lib/supabase/auth";
 import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
 import { whatsOnSchema, featuredRestaurantSchema } from "@/lib/validations/homepage";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 import type { ActionResult } from "@/lib/utils/api-helpers";
 import type {
   WhatsOn,
@@ -41,6 +42,21 @@ export interface FeaturedRestaurantWithTenant extends FeaturedRestaurant {
 
 export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "whats_on",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view What's On content");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -120,6 +136,21 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
 
 export async function getWhatsOnItem(id: string): Promise<ActionResult<WhatsOnResolved>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "whats_on",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view What's On content");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -199,6 +230,16 @@ export async function createWhatsOnItem(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "whats_on",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create What's On content");
+    }
+
     // Parse form data
     const rawData = {
       content_type: formData.get("content_type") as WhatsOnContentType,
@@ -223,11 +264,49 @@ export async function createWhatsOnItem(
     const data = validated.data;
     const supabase = await createAdminClient();
 
+    // Get all existing items to check limit and determine sort_order
+    const { data: existingItems, error: fetchError } = await supabase
+      .from("whats_on")
+      .select("*")
+      .order("sort_order", { ascending: true });
+
+    if (fetchError) {
+      console.error("Fetch error:", fetchError);
+      return handleSupabaseError(fetchError);
+    }
+
+    // Check if we've reached the 6-item limit (total count, including inactive)
+    if (existingItems && existingItems.length >= 6) {
+      return errorResponse(
+        "Maximum limit reached. You can only have up to 6 items in What's On feed (including inactive items). Please delete an existing item before adding a new one."
+      );
+    }
+
+    // Check for duplicate reference (for non-custom items)
+    if (data.content_type !== "custom" && data.reference_id) {
+      const duplicate = existingItems?.find(
+        (item) => item.content_type === data.content_type && item.reference_id === data.reference_id
+      );
+
+      if (duplicate) {
+        return errorResponse(
+          "This item already exists in your What's On feed. Please select a different item or delete the existing one first."
+        );
+      }
+    }
+
+    // Calculate next sort_order (append to end)
+    const maxSortOrder = existingItems && existingItems.length > 0
+      ? Math.max(...existingItems.map(item => item.sort_order))
+      : -1;
+    const nextSortOrder = maxSortOrder + 1;
+
     // Insert item
     const { data: item, error } = await supabase
       .from("whats_on")
       .insert({
         ...data,
+        sort_order: nextSortOrder,
         created_by: session.userId,
       })
       .select()
@@ -266,6 +345,16 @@ export async function updateWhatsOnItem(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "whats_on",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to update What's On content");
     }
 
     // Parse form data
@@ -335,6 +424,16 @@ export async function deleteWhatsOnItem(id: string): Promise<ActionResult<void>>
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "whats_on",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete What's On content");
+    }
+
     const supabase = await createAdminClient();
 
     // Get item for logging
@@ -386,6 +485,16 @@ export async function reorderWhatsOnItems(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "whats_on",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to reorder What's On content");
     }
 
     const supabase = await createAdminClient();
@@ -443,6 +552,16 @@ export async function toggleWhatsOnStatus(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "whats_on",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to update What's On content");
+    }
+
     const supabase = await createAdminClient();
 
     const { data: item, error } = await supabase
@@ -475,6 +594,21 @@ export async function toggleWhatsOnStatus(
 
 export async function getFeaturedRestaurants(): Promise<ActionResult<FeaturedRestaurantWithTenant[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "featured_restaurants",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view featured restaurants");
+    }
+
     const supabase = await createClient();
 
     // Fetch featured restaurants without join (no FK relationship may exist)
@@ -526,6 +660,21 @@ export async function getFeaturedRestaurant(
   id: string
 ): Promise<ActionResult<FeaturedRestaurantWithTenant>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "featured_restaurants",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view featured restaurants");
+    }
+
     const supabase = await createClient();
 
     // Fetch featured restaurant without join (no FK relationship may exist)
@@ -574,6 +723,16 @@ export async function createFeaturedRestaurant(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "featured_restaurants",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create featured restaurants");
+    }
+
     // Parse form data
     const rawData = {
       tenant_id: formData.get("tenant_id") as string,
@@ -596,22 +755,47 @@ export async function createFeaturedRestaurant(
     const data = validated.data;
     const supabase = await createAdminClient();
 
-    // Check if tenant is already featured
-    const { data: existing } = await supabase
+    // Get all existing items to check limit and determine sort_order
+    const { data: existingItems, error: fetchError } = await supabase
       .from("featured_restaurants")
-      .select("id")
-      .eq("tenant_id", data.tenant_id)
-      .single();
+      .select("*")
+      .order("sort_order", { ascending: true });
 
-    if (existing) {
-      return errorResponse("This restaurant is already featured");
+    if (fetchError) {
+      console.error("Fetch error:", fetchError);
+      return handleSupabaseError(fetchError);
     }
+
+    // Check if we've reached the 6-item limit (total count, including inactive)
+    if (existingItems && existingItems.length >= 6) {
+      return errorResponse(
+        "Maximum limit reached. You can only feature up to 6 restaurants (including inactive items). Please remove an existing featured restaurant before adding a new one."
+      );
+    }
+
+    // Check if tenant is already featured
+    const duplicate = existingItems?.find(
+      (item) => item.tenant_id === data.tenant_id
+    );
+
+    if (duplicate) {
+      return errorResponse(
+        "This restaurant is already featured. Please select a different restaurant or remove the existing one first."
+      );
+    }
+
+    // Calculate next sort_order (append to end)
+    const maxSortOrder = existingItems && existingItems.length > 0
+      ? Math.max(...existingItems.map(item => item.sort_order))
+      : -1;
+    const nextSortOrder = maxSortOrder + 1;
 
     // Insert item
     const { data: item, error } = await supabase
       .from("featured_restaurants")
       .insert({
         ...data,
+        sort_order: nextSortOrder,
         created_by: session.userId,
       })
       .select()
@@ -659,6 +843,16 @@ export async function updateFeaturedRestaurant(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "featured_restaurants",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to update featured restaurants");
+    }
+
     // Parse form data
     const rawData = {
       tenant_id: formData.get("tenant_id") as string,
@@ -696,7 +890,9 @@ export async function updateFeaturedRestaurant(
         .single();
 
       if (existing) {
-        return errorResponse("This restaurant is already featured");
+        return errorResponse(
+          "This restaurant is already featured. Please select a different restaurant."
+        );
       }
     }
 
@@ -748,6 +944,16 @@ export async function deleteFeaturedRestaurant(id: string): Promise<ActionResult
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "featured_restaurants",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete featured restaurants");
     }
 
     const supabase = await createAdminClient();
@@ -814,6 +1020,16 @@ export async function reorderFeaturedRestaurants(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "featured_restaurants",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to reorder featured restaurants");
+    }
+
     const supabase = await createAdminClient();
 
     // To avoid unique constraint violations on sort_order during reordering,
@@ -869,6 +1085,16 @@ export async function toggleFeaturedRestaurantStatus(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "featured_restaurants",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to update featured restaurants");
+    }
+
     const supabase = await createAdminClient();
 
     const { data: item, error } = await supabase
@@ -900,7 +1126,9 @@ export async function toggleFeaturedRestaurantStatus(
 // ============================================================================
 
 export async function getReferenceOptions(
-  contentType: WhatsOnContentType
+  contentType: WhatsOnContentType,
+  searchQuery?: string,
+  limit?: number
 ): Promise<ActionResult<{ id: string; label: string; image?: string }[]>> {
   try {
     const supabase = await createClient();
@@ -910,6 +1138,9 @@ export async function getReferenceOptions(
       return successResponse([]);
     }
 
+    // Smart limit: use provided limit, or default based on search
+    const queryLimit = limit || (searchQuery ? 50 : 100);
+
     let query;
     switch (contentType) {
       case "event":
@@ -917,33 +1148,57 @@ export async function getReferenceOptions(
           .from("events")
           .select("id, title, images")
           .eq("is_published", true)
-          .order("start_at", { ascending: false })
-          .limit(50);
+          .order("start_at", { ascending: false });
+
+        if (searchQuery) {
+          query = query.ilike("title", `%${searchQuery}%`);
+        }
+
+        query = query.limit(queryLimit);
         break;
+
       case "tenant":
         query = supabase
           .from("tenants")
           .select("id, name, logo_url")
           .eq("is_active", true)
-          .order("name", { ascending: true })
-          .limit(100);
+          .order("name", { ascending: true});
+
+        if (searchQuery) {
+          query = query.ilike("name", `%${searchQuery}%`);
+        }
+
+        query = query.limit(queryLimit);
         break;
+
       case "post":
         query = supabase
           .from("posts")
           .select("id, title, image_url")
           .eq("is_published", true)
-          .order("publish_at", { ascending: false })
-          .limit(50);
+          .order("publish_at", { ascending: false });
+
+        if (searchQuery) {
+          query = query.ilike("title", `%${searchQuery}%`);
+        }
+
+        query = query.limit(queryLimit);
         break;
+
       case "promotion":
         query = supabase
           .from("promotions")
           .select("id, title, image_url")
           .eq("status", "published")
-          .order("start_date", { ascending: false })
-          .limit(50);
+          .order("created_at", { ascending: false });
+
+        if (searchQuery) {
+          query = query.ilike("title", `%${searchQuery}%`);
+        }
+
+        query = query.limit(queryLimit);
         break;
+
       default:
         return successResponse([]);
     }
@@ -954,11 +1209,28 @@ export async function getReferenceOptions(
       return handleSupabaseError(error);
     }
 
-    const options = (data || []).map((item: any) => ({
-      id: item.id,
-      label: item.title || item.name,
-      image: item.image_url || item.logo_url || (item.images?.[0] ?? null),
-    }));
+    const options = (data || []).map((item: any) => {
+      // Extract image URL based on content type
+      let imageUrl = null;
+
+      if (item.image_url && typeof item.image_url === 'string') {
+        imageUrl = item.image_url;
+      } else if (item.logo_url && typeof item.logo_url === 'string') {
+        imageUrl = item.logo_url;
+      } else if (Array.isArray(item.images) && item.images.length > 0) {
+        // For events, images can be strings or objects with url property
+        const firstImage = item.images[0];
+        imageUrl = typeof firstImage === 'string'
+          ? firstImage
+          : (firstImage && typeof firstImage === 'object' && 'url' in firstImage ? firstImage.url : null);
+      }
+
+      return {
+        id: item.id,
+        label: item.title || item.name,
+        image: imageUrl,
+      };
+    });
 
     return successResponse(options);
   } catch (error) {

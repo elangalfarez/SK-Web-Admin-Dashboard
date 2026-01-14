@@ -8,6 +8,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { logActivity, hashPassword, verifyPassword } from "@/lib/supabase/auth";
 import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 import {
   createUserSchema,
   updateUserSchema,
@@ -54,6 +55,16 @@ export async function getUsers(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "admin_users",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view admin users");
     }
 
     const supabase = await createClient();
@@ -185,6 +196,16 @@ export async function createUser(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "admin_users",
+      "create"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create admin users");
+    }
+
     // Parse form data
     const rawData = {
       email: formData.get("email") as string,
@@ -279,6 +300,16 @@ export async function updateUser(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "admin_users",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit admin users");
     }
 
     // Parse form data
@@ -376,6 +407,16 @@ export async function deleteUser(id: string): Promise<ActionResult<void>> {
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "admin_users",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete admin users");
+    }
+
     // Prevent self-deletion
     if (id === session.userId) {
       return errorResponse("You cannot delete your own account");
@@ -437,6 +478,16 @@ export async function toggleUserStatus(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "admin_users",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit admin users");
+    }
+
     // Prevent self-deactivation
     if (id === session.userId && !isActive) {
       return errorResponse("You cannot deactivate your own account");
@@ -479,6 +530,16 @@ export async function resetUserPassword(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "admin_users",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to reset user passwords");
     }
 
     // Parse form data
@@ -713,6 +774,16 @@ export async function createRole(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "admin_roles",
+      "manage"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to manage roles");
+    }
+
     // Parse form data
     const rawData = {
       name: formData.get("name") as string,
@@ -810,6 +881,16 @@ export async function updateRole(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "admin_roles",
+      "manage"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to manage roles");
+    }
+
     // Parse form data
     const rawData = {
       name: formData.get("name") as string,
@@ -903,6 +984,16 @@ export async function deleteRole(id: string): Promise<ActionResult<void>> {
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "admin_roles",
+      "manage"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to manage roles");
     }
 
     const supabase = await createAdminClient();

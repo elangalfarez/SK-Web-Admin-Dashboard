@@ -20,57 +20,55 @@ import { ROLES, PERMISSION_MODULES } from "@/lib/constants";
  * Maps routes to required permissions
  */
 export const ROUTE_PERMISSIONS: Record<string, PermissionCheck> = {
-  // Dashboard
+  // Dashboard - accessible to all authenticated users
   "/": { module: "dashboard", action: "view" },
-  
+
   // Events
   "/events": { module: "events", action: "view" },
   "/events/create": { module: "events", action: "create" },
   "/events/[id]": { module: "events", action: "edit" },
-  
+
   // Promotions
   "/promotions": { module: "promotions", action: "view" },
   "/promotions/create": { module: "promotions", action: "create" },
   "/promotions/[id]": { module: "promotions", action: "edit" },
-  
+
   // Blog
   "/blog": { module: "posts", action: "view" },
   "/blog/create": { module: "posts", action: "create" },
   "/blog/[id]": { module: "posts", action: "edit" },
   "/blog/categories": { module: "posts", action: "manage" },
-  
+
   // Homepage content
-  "/whats-on": { module: "whats_on", action: "view" },
-  "/featured-restaurants": { module: "featured_restaurants", action: "view" },
-  
+  "/homepage/whats-on": { module: "whats_on", action: "view" },
+  "/homepage/restaurants": { module: "featured_restaurants", action: "view" },
+
   // Tenants
   "/tenants": { module: "tenants", action: "view" },
   "/tenants/create": { module: "tenants", action: "create" },
   "/tenants/[id]": { module: "tenants", action: "edit" },
   "/tenants/categories": { module: "tenant_categories", action: "view" },
-  
+
   // Site settings
-  "/site-settings": { module: "seo_settings", action: "view" },
-  
+  "/settings": { module: "seo_settings", action: "view" },
+  "/settings/profile": { module: "dashboard", action: "view" }, // Always accessible
+
   // Contacts
   "/contacts": { module: "contacts", action: "view" },
   "/contacts/[id]": { module: "contacts", action: "view" },
-  
+
   // Admin users
-  "/admin-users": { module: "admin_users", action: "view" },
-  "/admin-users/[id]": { module: "admin_users", action: "edit" },
-  "/admin-users/roles": { module: "admin_roles", action: "view" },
-  
+  "/users": { module: "admin_users", action: "view" },
+  "/users/[id]": { module: "admin_users", action: "edit" },
+  "/users/roles": { module: "admin_roles", action: "view" },
+
   // VIP Cards
-  "/vip-cards": { module: "dashboard", action: "view" },
-  "/vip-cards/tiers": { module: "dashboard", action: "view" },
-  "/vip-cards/benefits": { module: "dashboard", action: "view" },
-  
-  // Audit logs
-  "/audit-logs": { module: "activity_logs", action: "view" },
-  
-  // Profile (always accessible to authenticated users)
-  "/profile": { module: "dashboard", action: "view" },
+  "/vip": { module: "dashboard", action: "view" },
+  "/vip/tiers": { module: "dashboard", action: "view" },
+  "/vip/benefits": { module: "dashboard", action: "view" },
+
+  // Activity logs - accessible to all authenticated users
+  "/activity": { module: "activity_logs", action: "view" },
 };
 
 // ============================================================================
@@ -259,8 +257,11 @@ export function filterNavigationByPermissions<T extends { href: string }>(
 ): T[] {
   if (!user) return [];
   if (isSuperAdmin(user)) return items;
-  
+
   return items.filter((item) => {
+    // Activity logs are accessible to all authenticated users
+    if (item.href === "/activity") return true;
+
     const permission = ROUTE_PERMISSIONS[item.href];
     if (!permission) return true;
     return checkPermission(user, permission.module, permission.action);

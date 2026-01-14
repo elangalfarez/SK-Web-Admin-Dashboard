@@ -3,13 +3,12 @@
 
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Bell, Search, ChevronRight } from "lucide-react";
+import { Menu, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 // ============================================================================
 // BREADCRUMB GENERATION
@@ -87,7 +86,6 @@ interface HeaderProps {
 export function Header({ onMenuClick, className }: HeaderProps) {
   const pathname = usePathname();
   const breadcrumbs = generateBreadcrumbs(pathname);
-  const [showSearch, setShowSearch] = useState(false);
 
   return (
     <header
@@ -136,34 +134,29 @@ export function Header({ onMenuClick, className }: HeaderProps) {
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Search (expandable on mobile) */}
-      <div className="relative hidden lg:block">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Search..."
-          className="w-64 pl-9"
-        />
+      {/* Status Badge */}
+      <div className="flex items-center gap-3">
+        <Badge
+          variant="outline"
+          className="gap-2 border-green-500/50 bg-green-500/10 text-green-600 dark:text-green-400"
+        >
+          <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+          <span className="hidden sm:inline">Status:</span> Active
+        </Badge>
+
+        {/* Developer Credits */}
+        <div className="hidden items-center gap-2 border-l border-border pl-3 text-xs text-muted-foreground lg:flex">
+          <span className="font-medium">Developed by:</span>
+          <Link
+            href="https://algan.id"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold transition-colors hover:text-primary"
+          >
+            Elang Alfarez | Algan Studio
+          </Link>
+        </div>
       </div>
-
-      {/* Mobile search toggle */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="lg:hidden"
-        onClick={() => setShowSearch(!showSearch)}
-      >
-        <Search className="h-5 w-5" />
-        <span className="sr-only">Search</span>
-      </Button>
-
-      {/* Notifications */}
-      <Button variant="ghost" size="icon" className="relative">
-        <Bell className="h-5 w-5" />
-        <span className="sr-only">Notifications</span>
-        {/* Notification badge */}
-        <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
-      </Button>
     </header>
   );
 }

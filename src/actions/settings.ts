@@ -8,6 +8,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/supabase/auth";
 import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 import {
   siteSettingSchema,
   generalSettingsSchema,
@@ -47,6 +48,21 @@ const SETTINGS_GROUPS = {
 
 export async function getSiteSettings(): Promise<ActionResult<SiteSetting[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view site settings");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -71,6 +87,21 @@ export async function getSiteSettings(): Promise<ActionResult<SiteSetting[]>> {
 
 export async function getSiteSetting(id: string): Promise<ActionResult<SiteSetting>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view site settings");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -96,6 +127,21 @@ export async function getSiteSetting(id: string): Promise<ActionResult<SiteSetti
 
 export async function getSettingByKey(key: string): Promise<ActionResult<SiteSetting | null>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view site settings");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -126,6 +172,16 @@ export async function createSiteSetting(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create site settings");
     }
 
     // Parse form data
@@ -203,6 +259,16 @@ export async function updateSiteSetting(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit site settings");
     }
 
     // Parse form data
@@ -288,6 +354,16 @@ export async function deleteSiteSetting(id: string): Promise<ActionResult<void>>
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete site settings");
+    }
+
     const supabase = await createAdminClient();
 
     // Get setting for logging
@@ -346,6 +422,16 @@ export async function toggleSettingStatus(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit site settings");
+    }
+
     const supabase = await createAdminClient();
 
     const { data: setting, error } = await supabase
@@ -380,6 +466,21 @@ export async function getSettingsGroup<T>(
   defaultValues: T
 ): Promise<ActionResult<T>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view site settings");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -421,6 +522,16 @@ export async function saveSettingsGroup(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit site settings");
     }
 
     const supabase = await createAdminClient();
@@ -622,6 +733,21 @@ export async function getActiveScripts(
   injectionPoint: InjectionPoint
 ): Promise<ActionResult<SiteSetting[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "seo_settings",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view site settings");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase

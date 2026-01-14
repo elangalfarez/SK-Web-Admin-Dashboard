@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/dialog";
 import { deletePost, togglePostPublish } from "@/actions/blog";
 import type { PostWithCategory } from "@/types/database";
+import { RequirePermission } from "@/components/providers/auth-provider";
 
 // ============================================================================
 // TYPES
@@ -185,34 +186,40 @@ function PostRow({ post, onDelete }: PostRowProps) {
                 View
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/blog/${post.id}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </DropdownMenuItem>
+            <RequirePermission module="posts" action="edit">
+              <DropdownMenuItem asChild>
+                <Link href={`/blog/${post.id}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
+              </DropdownMenuItem>
+            </RequirePermission>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleTogglePublish}>
-              {post.is_published ? (
-                <>
-                  <GlobeLock className="mr-2 h-4 w-4" />
-                  Unpublish
-                </>
-              ) : (
-                <>
-                  <Globe className="mr-2 h-4 w-4" />
-                  Publish
-                </>
-              )}
-            </DropdownMenuItem>
+            <RequirePermission module="posts" action="publish">
+              <DropdownMenuItem onClick={handleTogglePublish}>
+                {post.is_published ? (
+                  <>
+                    <GlobeLock className="mr-2 h-4 w-4" />
+                    Unpublish
+                  </>
+                ) : (
+                  <>
+                    <Globe className="mr-2 h-4 w-4" />
+                    Publish
+                  </>
+                )}
+              </DropdownMenuItem>
+            </RequirePermission>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDelete(post.id)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
+            <RequirePermission module="posts" action="delete">
+              <DropdownMenuItem
+                onClick={() => onDelete(post.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </RequirePermission>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

@@ -8,6 +8,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/supabase/auth";
 import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 import { createTenantSchema, updateTenantSchema, tenantCategorySchema, type TenantFilters } from "@/lib/validations/tenant";
 import type { ActionResult } from "@/lib/utils/api-helpers";
 import type { Tenant, TenantCategory, MallFloor, PaginatedResult } from "@/types/database";
@@ -28,6 +29,21 @@ export async function getTenantsList(
   filters: TenantFilters = { page: 1, perPage: 10 }
 ): Promise<ActionResult<PaginatedResult<TenantWithCategory>>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenants",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view tenants");
+    }
+
     const supabase = await createClient();
     const { page, perPage, search, categoryId, floor, status, featured, newTenant, sortBy, sortOrder } = filters;
 
@@ -120,6 +136,21 @@ export async function getTenantsList(
 
 export async function getTenant(id: string): Promise<ActionResult<TenantWithCategory>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenants",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view tenants");
+    }
+
     const supabase = await createClient();
 
     // Fetch tenant without join (no FK relationship may exist)
@@ -161,6 +192,21 @@ export async function getTenant(id: string): Promise<ActionResult<TenantWithCate
 
 export async function getTenantByCode(code: string): Promise<ActionResult<TenantWithCategory>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenants",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view tenants");
+    }
+
     const supabase = await createClient();
 
     // Fetch tenant without join (no FK relationship may exist)
@@ -207,6 +253,16 @@ export async function createTenant(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenants",
+      "create"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create tenants");
     }
 
     // Parse form data
@@ -302,6 +358,16 @@ export async function updateTenant(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenants",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit tenants");
     }
 
     // Parse form data
@@ -414,6 +480,16 @@ export async function deleteTenant(id: string): Promise<ActionResult<void>> {
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenants",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete tenants");
+    }
+
     const supabase = await createAdminClient();
 
     // Check for linked promotions
@@ -479,6 +555,16 @@ export async function toggleTenantStatus(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenants",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit tenants");
+    }
+
     const supabase = await createAdminClient();
 
     const { data: tenant, error } = await supabase
@@ -527,6 +613,16 @@ export async function toggleTenantFeatured(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenants",
+      "feature"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to feature tenants");
+    }
+
     const supabase = await createAdminClient();
 
     const { data: tenant, error } = await supabase
@@ -568,6 +664,21 @@ export async function toggleTenantFeatured(
 
 export async function getTenantCategories(): Promise<ActionResult<TenantCategory[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenant_categories",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view tenant categories");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -588,6 +699,21 @@ export async function getTenantCategories(): Promise<ActionResult<TenantCategory
 
 export async function getTenantCategory(id: string): Promise<ActionResult<TenantCategory>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenant_categories",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view tenant categories");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -614,6 +740,16 @@ export async function createTenantCategory(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenant_categories",
+      "manage"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to manage tenant categories");
     }
 
     const rawData = {
@@ -690,6 +826,16 @@ export async function updateTenantCategory(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenant_categories",
+      "manage"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to manage tenant categories");
     }
 
     const rawData = {
@@ -780,6 +926,16 @@ export async function deleteTenantCategory(id: string): Promise<ActionResult<voi
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenant_categories",
+      "manage"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to manage tenant categories");
+    }
+
     const supabase = await createAdminClient();
 
     // Check if category has tenants
@@ -831,6 +987,21 @@ export async function deleteTenantCategory(id: string): Promise<ActionResult<voi
 
 export async function getMallFloors(): Promise<ActionResult<MallFloor[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "tenants",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view mall floors");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase

@@ -71,8 +71,8 @@ export function BlogPostForm({ post, mode }: BlogPostFormProps) {
     tags: post?.tags || [],
     is_published: post?.is_published || false,
     is_featured: post?.is_featured || false,
-    meta_title: "",
-    meta_description: "",
+    meta_title: post?.title || "", // Use title as fallback for meta_title
+    meta_description: post?.summary || "", // Use summary as fallback for meta_description
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -167,8 +167,12 @@ export function BlogPostForm({ post, mode }: BlogPostFormProps) {
 
         if (result.success) {
           toast.success(result.message);
-          router.push("/blog");
+          // Refresh the router cache first, then navigate
           router.refresh();
+          // Use a small delay to ensure refresh completes before navigation
+          setTimeout(() => {
+            router.push("/blog");
+          }, 100);
         } else {
           toast.error(result.error || "Failed to save post");
         }

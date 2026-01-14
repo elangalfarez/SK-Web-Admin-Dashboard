@@ -12,6 +12,7 @@ import { generateSlug } from "@/lib/utils/slug";
 import { createPostSchema, updatePostSchema, categorySchema, type PostFilters } from "@/lib/validations/blog";
 import type { ActionResult } from "@/lib/utils/api-helpers";
 import type { Post, BlogCategory, PostWithCategory, PaginatedResult } from "@/types/database";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 
 // ============================================================================
 // GET POSTS (with pagination and filters)
@@ -21,6 +22,21 @@ export async function getPosts(
   filters: PostFilters = { page: 1, perPage: 10 }
 ): Promise<ActionResult<PaginatedResult<PostWithCategory>>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view blog posts");
+    }
+
     const supabase = await createClient();
     const { page, perPage, search, status, featured, categoryId, tags, sortBy, sortOrder } = filters;
 
@@ -109,6 +125,21 @@ export async function getPosts(
 
 export async function getPost(id: string): Promise<ActionResult<PostWithCategory>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view blog posts");
+    }
+
     const supabase = await createClient();
 
     // Fetch post without join (no FK relationship may exist)
@@ -150,6 +181,21 @@ export async function getPost(id: string): Promise<ActionResult<PostWithCategory
 
 export async function getPostBySlug(slug: string): Promise<ActionResult<PostWithCategory>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view blog posts");
+    }
+
     const supabase = await createClient();
 
     // Fetch post without join (no FK relationship may exist)
@@ -198,6 +244,16 @@ export async function createPost(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "create"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create blog posts");
+    }
+
     // Parse form data
     const rawData = {
       title: formData.get("title") as string,
@@ -241,10 +297,10 @@ export async function createPost(
       data.slug = `${data.slug}-${Date.now()}`;
     }
 
-    // Set published_at if publishing
-    let publishedAt = data.published_at || null;
-    if (data.is_published && !publishedAt) {
-      publishedAt = new Date().toISOString();
+    // Set publish_at if publishing
+    let publishAt = data.published_at || null;
+    if (data.is_published && !publishAt) {
+      publishAt = new Date().toISOString();
     }
 
     // Insert post
@@ -253,17 +309,15 @@ export async function createPost(
       .insert({
         title: data.title,
         slug: data.slug,
-        excerpt: data.excerpt || null,
-        body: data.body || null,
-        featured_image: data.featured_image || null,
+        summary: data.excerpt || null,
+        body_html: data.body || null,
+        image_url: data.featured_image || null,
         category_id: data.category_id || null,
         tags: data.tags,
         is_published: data.is_published,
         is_featured: data.is_featured,
-        published_at: publishedAt,
-        meta_title: data.meta_title || null,
-        meta_description: data.meta_description || null,
-        author_id: session.userId,
+        publish_at: publishAt,
+        created_by: session.userId,
       })
       .select()
       .single();
@@ -303,6 +357,16 @@ export async function updatePost(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit blog posts");
     }
 
     // Parse form data
@@ -357,10 +421,10 @@ export async function updatePost(
       }
     }
 
-    // Set published_at if publishing for first time
-    let publishedAt = data.published_at || currentPost.published_at;
-    if (data.is_published && !currentPost.is_published && !publishedAt) {
-      publishedAt = new Date().toISOString();
+    // Set publish_at if publishing for first time
+    let publishAt = data.published_at || currentPost.publish_at;
+    if (data.is_published && !currentPost.is_published && !publishAt) {
+      publishAt = new Date().toISOString();
     }
 
     // Update post
@@ -369,16 +433,14 @@ export async function updatePost(
       .update({
         title: data.title,
         slug: data.slug,
-        excerpt: data.excerpt || null,
-        body: data.body || null,
-        featured_image: data.featured_image || null,
+        summary: data.excerpt || null,
+        body_html: data.body || null,
+        image_url: data.featured_image || null,
         category_id: data.category_id || null,
         tags: data.tags,
         is_published: data.is_published,
         is_featured: data.is_featured,
-        published_at: publishedAt,
-        meta_title: data.meta_title || null,
-        meta_description: data.meta_description || null,
+        publish_at: publishAt,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
@@ -419,6 +481,16 @@ export async function deletePost(id: string): Promise<ActionResult<void>> {
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete blog posts");
     }
 
     const supabase = await createAdminClient();
@@ -476,26 +548,36 @@ export async function togglePostPublish(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "publish"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to publish blog posts");
+    }
+
     const supabase = await createAdminClient();
 
     // Get current post
     const { data: currentPost } = await supabase
       .from("posts")
-      .select("published_at")
+      .select("publish_at")
       .eq("id", id)
       .single();
 
-    // Set published_at if publishing for first time
-    let publishedAt = currentPost?.published_at;
-    if (isPublished && !publishedAt) {
-      publishedAt = new Date().toISOString();
+    // Set publish_at if publishing for first time
+    let publishAt = currentPost?.publish_at;
+    if (isPublished && !publishAt) {
+      publishAt = new Date().toISOString();
     }
 
     const { data: post, error } = await supabase
       .from("posts")
       .update({
         is_published: isPublished,
-        published_at: publishedAt,
+        publish_at: publishAt,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
@@ -531,6 +613,21 @@ export async function togglePostPublish(
 
 export async function getCategories(): Promise<ActionResult<BlogCategory[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view blog categories");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -551,6 +648,21 @@ export async function getCategories(): Promise<ActionResult<BlogCategory[]>> {
 
 export async function getCategory(id: string): Promise<ActionResult<BlogCategory>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view blog categories");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -577,6 +689,16 @@ export async function createCategory(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "create"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create blog categories");
     }
 
     const rawData = {
@@ -653,6 +775,16 @@ export async function updateCategory(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit blog categories");
     }
 
     const rawData = {
@@ -737,6 +869,16 @@ export async function deleteCategory(id: string): Promise<ActionResult<void>> {
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete blog categories");
+    }
+
     const supabase = await createAdminClient();
 
     // Check if category has posts
@@ -788,6 +930,21 @@ export async function deleteCategory(id: string): Promise<ActionResult<void>> {
 
 export async function getPostTags(): Promise<ActionResult<string[]>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "posts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view blog tags");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase

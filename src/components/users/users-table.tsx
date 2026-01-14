@@ -43,6 +43,7 @@ import { getUsers, deleteUser, toggleUserStatus } from "@/actions/users";
 import { formatDate } from "@/lib/utils/format-date";
 import type { UserWithRoles } from "@/actions/users";
 import type { PaginatedResult } from "@/types/database";
+import { RequirePermission } from "@/components/providers/auth-provider";
 
 // ============================================================================
 // DEFAULT FILTERS
@@ -143,10 +144,12 @@ export function UsersTable() {
           onFiltersChange={handleFiltersChange}
           onReset={handleReset}
         />
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
+        <RequirePermission module="admin_users" action="create">
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add User
+          </Button>
+        </RequirePermission>
       </div>
 
       {/* Table Card */}
@@ -263,41 +266,49 @@ export function UsersTable() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => setEditingUser(user)}
-                              >
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit User
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => setResetPasswordUser(user)}
-                              >
-                                <Key className="mr-2 h-4 w-4" />
-                                Reset Password
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleToggleStatus(user)}
-                              >
-                                {user.is_active ? (
-                                  <>
-                                    <PowerOff className="mr-2 h-4 w-4" />
-                                    Deactivate
-                                  </>
-                                ) : (
-                                  <>
-                                    <Power className="mr-2 h-4 w-4" />
-                                    Activate
-                                  </>
-                                )}
-                              </DropdownMenuItem>
+                              <RequirePermission module="admin_users" action="edit">
+                                <DropdownMenuItem
+                                  onClick={() => setEditingUser(user)}
+                                >
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit User
+                                </DropdownMenuItem>
+                              </RequirePermission>
+                              <RequirePermission module="admin_users" action="edit">
+                                <DropdownMenuItem
+                                  onClick={() => setResetPasswordUser(user)}
+                                >
+                                  <Key className="mr-2 h-4 w-4" />
+                                  Reset Password
+                                </DropdownMenuItem>
+                              </RequirePermission>
+                              <RequirePermission module="admin_users" action="edit">
+                                <DropdownMenuItem
+                                  onClick={() => handleToggleStatus(user)}
+                                >
+                                  {user.is_active ? (
+                                    <>
+                                      <PowerOff className="mr-2 h-4 w-4" />
+                                      Deactivate
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Power className="mr-2 h-4 w-4" />
+                                      Activate
+                                    </>
+                                  )}
+                                </DropdownMenuItem>
+                              </RequirePermission>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => setDeletingUser(user)}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete User
-                              </DropdownMenuItem>
+                              <RequirePermission module="admin_users" action="delete">
+                                <DropdownMenuItem
+                                  onClick={() => setDeletingUser(user)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete User
+                                </DropdownMenuItem>
+                              </RequirePermission>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </td>

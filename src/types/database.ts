@@ -248,7 +248,7 @@ export interface Contact {
   enquiry_details: string;
   submitted_date: string;
   created_at: string;
-  is_read?: boolean; // Optional field for tracking read status
+  is_read?: boolean; // Track read status (added by migration: add-contacts-is-read-column.sql)
 }
 
 // ============================================================================

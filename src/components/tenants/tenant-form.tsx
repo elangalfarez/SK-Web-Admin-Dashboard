@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Save, ArrowLeft, Eye, Store, Building2, Phone, FolderOpen, Sparkles, Star } from "lucide-react";
+import { Save, ArrowLeft, Eye, Building2, Phone, FolderOpen, Sparkles, Star } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -369,36 +369,20 @@ export function TenantForm({ tenant, mode }: TenantFormProps) {
             <CardHeader>
               <CardTitle>Images</CardTitle>
               <CardDescription>
-                Store logo and banner image
+                Store banner image
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-6 sm:grid-cols-2">
-                {/* Logo */}
-                <div className="space-y-2">
-                  <Label>Logo</Label>
-                  <SingleImageUploader
-                    value={formData.logo_url}
-                    onChange={(url) => updateField("logo_url", url)}
-                    bucket="TENANTS"
-                    folder="logos"
-                    aspectRatio="square"
-                    placeholder="Upload logo"
-                  />
-                </div>
-
-                {/* Banner */}
-                <div className="space-y-2">
-                  <Label>Banner</Label>
-                  <SingleImageUploader
-                    value={formData.banner_url}
-                    onChange={(url) => updateField("banner_url", url)}
-                    bucket="TENANTS"
-                    folder="banners"
-                    aspectRatio="video"
-                    placeholder="Upload banner"
-                  />
-                </div>
+            <CardContent>
+              <div className="space-y-2">
+                <Label>Banner</Label>
+                <SingleImageUploader
+                  value={formData.banner_url}
+                  onChange={(url) => updateField("banner_url", url)}
+                  bucket="TENANTS"
+                  folder="banners"
+                  aspectRatio="video"
+                  placeholder="Upload banner"
+                />
               </div>
             </CardContent>
           </Card>
@@ -466,22 +450,22 @@ export function TenantForm({ tenant, mode }: TenantFormProps) {
           </Card>
 
           {/* Preview */}
-          {(formData.logo_url || formData.name) && (
+          {(formData.banner_url || formData.name) && (
             <Card>
               <CardHeader>
                 <CardTitle>Preview</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                  {formData.logo_url ? (
+                  {formData.banner_url ? (
                     <img
-                      src={formData.logo_url}
+                      src={formData.banner_url}
                       alt={formData.name}
                       className="h-12 w-12 rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
-                      <Store className="h-6 w-6 text-muted-foreground" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary font-semibold text-lg">
+                      {formData.name ? formData.name.charAt(0).toUpperCase() : "?"}
                     </div>
                   )}
                   <div className="min-w-0 flex-1">

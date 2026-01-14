@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { deletePromotion, updatePromotionStatus } from "@/actions/promotions";
 import type { PromotionWithTenant, PromotionStatus } from "@/types/database";
+import { RequirePermission } from "@/components/providers/auth-provider";
 
 // ============================================================================
 // TYPES
@@ -198,42 +199,52 @@ function PromotionRow({ promotion, onDelete }: PromotionRowProps) {
                 View
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/promotions/${promotion.id}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </DropdownMenuItem>
+            <RequirePermission module="promotions" action="edit">
+              <DropdownMenuItem asChild>
+                <Link href={`/promotions/${promotion.id}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
+              </DropdownMenuItem>
+            </RequirePermission>
             <DropdownMenuSeparator />
-            
+
             {/* Status actions */}
             {promotion.status !== "published" && (
-              <DropdownMenuItem onClick={() => handleStatusChange("published")}>
-                <PlayCircle className="mr-2 h-4 w-4" />
-                Publish
-              </DropdownMenuItem>
+              <RequirePermission module="promotions" action="publish">
+                <DropdownMenuItem onClick={() => handleStatusChange("published")}>
+                  <PlayCircle className="mr-2 h-4 w-4" />
+                  Publish
+                </DropdownMenuItem>
+              </RequirePermission>
             )}
             {promotion.status === "published" && (
-              <DropdownMenuItem onClick={() => handleStatusChange("staging")}>
-                <PauseCircle className="mr-2 h-4 w-4" />
-                Move to Staging
-              </DropdownMenuItem>
+              <RequirePermission module="promotions" action="publish">
+                <DropdownMenuItem onClick={() => handleStatusChange("staging")}>
+                  <PauseCircle className="mr-2 h-4 w-4" />
+                  Move to Staging
+                </DropdownMenuItem>
+              </RequirePermission>
             )}
             {promotion.status !== "expired" && (
-              <DropdownMenuItem onClick={() => handleStatusChange("expired")}>
-                <XCircle className="mr-2 h-4 w-4" />
-                Mark as Expired
-              </DropdownMenuItem>
+              <RequirePermission module="promotions" action="publish">
+                <DropdownMenuItem onClick={() => handleStatusChange("expired")}>
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Mark as Expired
+                </DropdownMenuItem>
+              </RequirePermission>
             )}
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDelete(promotion.id)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
+            <RequirePermission module="promotions" action="delete">
+              <DropdownMenuItem
+                onClick={() => onDelete(promotion.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </RequirePermission>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

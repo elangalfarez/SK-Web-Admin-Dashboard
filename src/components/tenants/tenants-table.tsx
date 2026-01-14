@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { deleteTenant, toggleTenantStatus, toggleTenantFeatured } from "@/actions/tenants";
 import type { TenantWithCategory } from "@/actions/tenants";
+import { RequirePermission } from "@/components/providers/auth-provider";
 
 // ============================================================================
 // TYPES
@@ -190,47 +191,55 @@ function TenantRow({ tenant, onDelete }: TenantRowProps) {
                 View
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/tenants/${tenant.id}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </DropdownMenuItem>
+            <RequirePermission module="tenants" action="edit">
+              <DropdownMenuItem asChild>
+                <Link href={`/tenants/${tenant.id}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
+              </DropdownMenuItem>
+            </RequirePermission>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleToggleStatus}>
-              {tenant.is_active ? (
-                <>
-                  <PowerOff className="mr-2 h-4 w-4" />
-                  Deactivate
-                </>
-              ) : (
-                <>
-                  <Power className="mr-2 h-4 w-4" />
-                  Activate
-                </>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleToggleFeatured}>
-              {tenant.is_featured ? (
-                <>
-                  <StarOff className="mr-2 h-4 w-4" />
-                  Remove Featured
-                </>
-              ) : (
-                <>
-                  <Star className="mr-2 h-4 w-4" />
-                  Mark Featured
-                </>
-              )}
-            </DropdownMenuItem>
+            <RequirePermission module="tenants" action="edit">
+              <DropdownMenuItem onClick={handleToggleStatus}>
+                {tenant.is_active ? (
+                  <>
+                    <PowerOff className="mr-2 h-4 w-4" />
+                    Deactivate
+                  </>
+                ) : (
+                  <>
+                    <Power className="mr-2 h-4 w-4" />
+                    Activate
+                  </>
+                )}
+              </DropdownMenuItem>
+            </RequirePermission>
+            <RequirePermission module="tenants" action="edit">
+              <DropdownMenuItem onClick={handleToggleFeatured}>
+                {tenant.is_featured ? (
+                  <>
+                    <StarOff className="mr-2 h-4 w-4" />
+                    Remove Featured
+                  </>
+                ) : (
+                  <>
+                    <Star className="mr-2 h-4 w-4" />
+                    Mark Featured
+                  </>
+                )}
+              </DropdownMenuItem>
+            </RequirePermission>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDelete(tenant.id)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
+            <RequirePermission module="tenants" action="delete">
+              <DropdownMenuItem
+                onClick={() => onDelete(tenant.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </RequirePermission>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

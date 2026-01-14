@@ -45,6 +45,7 @@ import {
 } from "@/actions/contacts";
 import { formatRelativeDate } from "@/lib/utils/format-date";
 import type { Contact } from "@/types/database";
+import { RequirePermission } from "@/components/providers/auth-provider";
 
 // ============================================================================
 // TYPES
@@ -189,27 +190,31 @@ function ContactRow({ contact, isSelected, onSelect, onDelete }: ContactRowProps
                 View Details
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleToggleRead}>
-              {contact.is_read ? (
-                <>
-                  <Mail className="mr-2 h-4 w-4" />
-                  Mark as Unread
-                </>
-              ) : (
-                <>
-                  <MailOpen className="mr-2 h-4 w-4" />
-                  Mark as Read
-                </>
-              )}
-            </DropdownMenuItem>
+            <RequirePermission module="contacts" action="edit">
+              <DropdownMenuItem onClick={handleToggleRead}>
+                {contact.is_read ? (
+                  <>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Mark as Unread
+                  </>
+                ) : (
+                  <>
+                    <MailOpen className="mr-2 h-4 w-4" />
+                    Mark as Read
+                  </>
+                )}
+              </DropdownMenuItem>
+            </RequirePermission>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDelete(contact.id)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
+            <RequirePermission module="contacts" action="delete">
+              <DropdownMenuItem
+                onClick={() => onDelete(contact.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </RequirePermission>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -398,24 +403,28 @@ export function ContactsTable({
           {/* Bulk Actions */}
           {someSelected && (
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBulkMarkAsRead}
-                disabled={isPending}
-              >
-                <MailOpen className="mr-2 h-4 w-4" />
-                Mark as Read
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowBulkDeleteDialog(true)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
+              <RequirePermission module="contacts" action="edit">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkMarkAsRead}
+                  disabled={isPending}
+                >
+                  <MailOpen className="mr-2 h-4 w-4" />
+                  Mark as Read
+                </Button>
+              </RequirePermission>
+              <RequirePermission module="contacts" action="delete">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowBulkDeleteDialog(true)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </RequirePermission>
             </div>
           )}
         </div>

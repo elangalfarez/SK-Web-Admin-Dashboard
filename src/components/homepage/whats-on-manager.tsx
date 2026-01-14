@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import {
   Plus,
   Pencil,
@@ -51,6 +51,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   Dialog,
   DialogContent,
@@ -294,20 +295,118 @@ function ItemForm({ item, onSubmit, onCancel, isPending }: ItemFormProps) {
   const [referenceOptions, setReferenceOptions] = useState<
     { id: string; label: string; image?: string }[]
   >([]);
+  const [selectedOptionCache, setSelectedOptionCache] = useState<
+    { id: string; label: string; image?: string } | null
+  >(null);
   const [loadingOptions, setLoadingOptions] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load reference options when content type changes
+  // Load initial options when content type changes - OPTIMIZED with small limit
   useEffect(() => {
     if (formData.content_type !== "custom") {
       setLoadingOptions(true);
-      getReferenceOptions(formData.content_type).then((result) => {
-        if (result.success) {
-          setReferenceOptions(result.data);
-        }
-        setLoadingOptions(false);
-      });
+
+      // If we're editing and have a reference_id, we need to ensure it's loaded
+      if (item && formData.reference_id && item.reference_data) {
+        // Start with the selected item + initial batch
+        getReferenceOptions(formData.content_type, "", 30).then((result) => {
+          if (result.success) {
+            // Create option from existing item's reference data
+            const selectedFromItem = {
+              id: formData.reference_id,
+              label: item.reference_data?.title || item.reference_data?.name || formData.reference_id,
+              image: item.reference_data?.image_url || item.reference_data?.logo_url,
+            };
+
+            // Ensure selected item is in options and cache it
+            const hasSelected = result.data.find(opt => opt.id === formData.reference_id);
+            if (!hasSelected) {
+              setReferenceOptions([selectedFromItem, ...result.data]);
+            } else {
+              setReferenceOptions(result.data);
+            }
+            setSelectedOptionCache(selectedFromItem);
+          }
+          setLoadingOptions(false);
+        });
+      } else {
+        // Fresh selection - just load first 30
+        getReferenceOptions(formData.content_type, "", 30).then((result) => {
+          if (result.success) {
+            setReferenceOptions(result.data);
+          }
+          setLoadingOptions(false);
+        });
+      }
     }
+  }, [formData.content_type, item?.id]);
+
+  // Cache selected option when reference_id changes (for new selections)
+  useEffect(() => {
+    if (formData.reference_id && referenceOptions.length > 0) {
+      const selected = referenceOptions.find(opt => opt.id === formData.reference_id);
+      // Update cache if we found the option AND it's different from current cache
+      if (selected && (!selectedOptionCache || selectedOptionCache.id !== selected.id)) {
+        setSelectedOptionCache(selected);
+      }
+    }
+  }, [formData.reference_id, referenceOptions, selectedOptionCache]);
+
+  // Handle server-side search with debouncing
+  const handleSearchChange = useCallback((query: string) => {
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // If query is empty, load more options (100 instead of 30)
+    if (!query.trim()) {
+      setIsSearching(true);
+      getReferenceOptions(formData.content_type, "", 100)
+        .then((result) => {
+          if (result.success) {
+            setReferenceOptions(result.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Load error:", error);
+        })
+        .finally(() => {
+          setIsSearching(false);
+        });
+      return;
+    }
+
+    // Set searching state for non-empty queries
+    setIsSearching(true);
+
+    // Debounce search by 300ms
+    searchTimeoutRef.current = setTimeout(() => {
+      getReferenceOptions(formData.content_type, query, 50)
+        .then((result) => {
+          if (result.success) {
+            setReferenceOptions(result.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Search error:", error);
+        })
+        .finally(() => {
+          // ALWAYS reset searching state
+          setIsSearching(false);
+        });
+    }, 300);
   }, [formData.content_type]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -357,39 +456,26 @@ function ItemForm({ item, onSubmit, onCancel, isPending }: ItemFormProps) {
           <Label htmlFor="reference_id" required>
             Select {contentTypeConfig[formData.content_type].label}
           </Label>
-          <Select
-            value={formData.reference_id}
-            onValueChange={(value) =>
-              setFormData((prev) => ({ ...prev, reference_id: value }))
-            }
-            disabled={loadingOptions}
-          >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={
-                  loadingOptions
-                    ? "Loading..."
-                    : `Select ${contentTypeConfig[formData.content_type].label.toLowerCase()}`
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {referenceOptions.map((option) => (
-                <SelectItem key={option.id} value={option.id}>
-                  <span className="flex items-center gap-2">
-                    {option.image && (
-                      <img
-                        src={option.image}
-                        alt=""
-                        className="h-6 w-6 rounded object-cover"
-                      />
-                    )}
-                    {option.label}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {loadingOptions ? (
+            <div className="flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
+              Loading options...
+            </div>
+          ) : (
+            <SearchableSelect
+              value={formData.reference_id}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, reference_id: value }))
+              }
+              options={referenceOptions}
+              selectedOption={selectedOptionCache}
+              placeholder={`Select ${contentTypeConfig[formData.content_type].label.toLowerCase()}`}
+              searchPlaceholder={`Search ${contentTypeConfig[formData.content_type].label.toLowerCase()}s...`}
+              emptyText={`No ${contentTypeConfig[formData.content_type].label.toLowerCase()}s found`}
+              onSearchChange={handleSearchChange}
+              isSearching={isSearching}
+            />
+          )}
         </div>
       )}
 

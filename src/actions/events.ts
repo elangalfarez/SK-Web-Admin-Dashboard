@@ -12,6 +12,7 @@ import { generateSlug } from "@/lib/utils/slug";
 import { createEventSchema, updateEventSchema, type EventFilters } from "@/lib/validations/event";
 import type { ActionResult } from "@/lib/utils/api-helpers";
 import type { Event, PaginatedResult } from "@/types/database";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 
 // ============================================================================
 // HELPERS
@@ -54,6 +55,21 @@ export async function getEvents(
   filters: EventFilters = { page: 1, perPage: 10 }
 ): Promise<ActionResult<PaginatedResult<Event>>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "events",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view events");
+    }
+
     const supabase = await createClient();
     const { page, perPage, search, status, featured, startDate, endDate, tags, sortBy, sortOrder } = filters;
 
@@ -205,6 +221,16 @@ export async function createEvent(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "events",
+      "create"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create events");
+    }
+
     // Parse form data
     const rawData = {
       title: formData.get("title") as string,
@@ -304,6 +330,16 @@ export async function updateEvent(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "events",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit events");
     }
 
     // Parse form data
@@ -414,6 +450,16 @@ export async function deleteEvent(id: string): Promise<ActionResult<void>> {
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "events",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete events");
+    }
+
     const supabase = await createAdminClient();
 
     // Get event before deletion for logging
@@ -469,6 +515,16 @@ export async function toggleEventPublish(
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "events",
+      "publish"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to publish events");
+    }
+
     const supabase = await createAdminClient();
 
     const { data: event, error } = await supabase
@@ -516,6 +572,16 @@ export async function toggleEventFeatured(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "events",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit events");
     }
 
     const supabase = await createAdminClient();

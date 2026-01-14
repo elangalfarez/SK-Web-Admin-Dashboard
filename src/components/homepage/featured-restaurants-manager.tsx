@@ -12,7 +12,6 @@ import {
   Power,
   PowerOff,
   UtensilsCrossed,
-  Calendar,
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -42,13 +41,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   Dialog,
   DialogContent,
@@ -58,7 +51,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { SingleImageUploader } from "@/components/shared/image-uploader";
 import {
   getFeaturedRestaurants,
   createFeaturedRestaurant,
@@ -68,7 +60,6 @@ import {
   reorderFeaturedRestaurants,
   getRestaurantOptions,
 } from "@/actions/homepage";
-import { formatDate } from "@/lib/utils/format-date";
 import type { FeaturedRestaurantWithTenant } from "@/actions/homepage";
 
 // ============================================================================
@@ -77,24 +68,18 @@ import type { FeaturedRestaurantWithTenant } from "@/actions/homepage";
 
 interface FormData {
   tenant_id: string;
-  featured_image_url: string;
   featured_description: string;
   highlight_text: string;
   sort_order: number;
   is_active: boolean;
-  start_date: string;
-  end_date: string;
 }
 
 const defaultFormData: FormData = {
   tenant_id: "",
-  featured_image_url: "",
   featured_description: "",
   highlight_text: "",
   sort_order: 0,
   is_active: true,
-  start_date: "",
-  end_date: "",
 };
 
 // ============================================================================
@@ -132,8 +117,6 @@ function SortableRestaurantItem({
     transition,
   };
 
-  const logo = restaurant.featured_image_url || restaurant.tenant?.logo_url;
-
   return (
     <div
       ref={setNodeRef}
@@ -159,9 +142,9 @@ function SortableRestaurantItem({
 
       {/* Logo */}
       <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted">
-        {logo && typeof logo === 'string' ? (
+        {restaurant.tenant?.logo_url ? (
           <img
-            src={logo}
+            src={restaurant.tenant.logo_url}
             alt=""
             className="h-full w-full object-cover"
           />
@@ -194,13 +177,6 @@ function SortableRestaurantItem({
           <span className="text-xs text-muted-foreground">
             Order: {index + 1}
           </span>
-          {restaurant.start_date && (
-            <span className="text-xs text-muted-foreground">
-              <Calendar className="inline h-3 w-3 mr-1" />
-              {formatDate(restaurant.start_date)}
-              {restaurant.end_date && ` - ${formatDate(restaurant.end_date)}`}
-            </span>
-          )}
         </div>
       </div>
 
@@ -258,13 +234,10 @@ function RestaurantForm({
     if (restaurant) {
       return {
         tenant_id: restaurant.tenant_id,
-        featured_image_url: restaurant.featured_image_url || "",
         featured_description: restaurant.featured_description || "",
         highlight_text: restaurant.highlight_text || "",
         sort_order: restaurant.sort_order,
         is_active: restaurant.is_active,
-        start_date: restaurant.start_date || "",
-        end_date: restaurant.end_date || "",
       };
     }
     return defaultFormData;
@@ -277,6 +250,7 @@ function RestaurantForm({
 
   // Load restaurant options
   useEffect(() => {
+    setLoadingOptions(true);
     getRestaurantOptions().then((result) => {
       if (result.success) {
         setRestaurantOptions(result.data);
@@ -299,39 +273,28 @@ function RestaurantForm({
       {/* Restaurant Selection */}
       <div className="space-y-2">
         <Label htmlFor="tenant_id" required>Restaurant</Label>
-        <Select
-          value={formData.tenant_id}
-          onValueChange={(value) =>
-            setFormData((prev) => ({ ...prev, tenant_id: value }))
-          }
-          disabled={loadingOptions || !!restaurant}
-        >
-          <SelectTrigger>
-            <SelectValue
-              placeholder={loadingOptions ? "Loading..." : "Select restaurant"}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {restaurantOptions.map((option) => (
-              <SelectItem key={option.id} value={option.id}>
-                <span className="flex items-center gap-2">
-                  {option.logo_url ? (
-                    <img
-                      src={option.logo_url}
-                      alt=""
-                      className="h-6 w-6 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="h-6 w-6 rounded bg-muted flex items-center justify-center">
-                      <UtensilsCrossed className="h-3 w-3" />
-                    </div>
-                  )}
-                  {option.name}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {loadingOptions ? (
+          <div className="flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
+            Loading restaurants...
+          </div>
+        ) : (
+          <SearchableSelect
+            value={formData.tenant_id}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, tenant_id: value }))
+            }
+            options={restaurantOptions.map((r) => ({
+              id: r.id,
+              label: r.name,
+              image: r.logo_url || undefined,
+            }))}
+            placeholder="Select restaurant"
+            searchPlaceholder="Search restaurants..."
+            emptyText="No restaurants found"
+            disabled={!!restaurant}
+          />
+        )}
         {restaurant && (
           <p className="text-xs text-muted-foreground">
             Restaurant cannot be changed. Delete and create new if needed.
@@ -375,55 +338,6 @@ function RestaurantForm({
         <p className="text-xs text-muted-foreground">
           {formData.featured_description.length}/300 characters
         </p>
-      </div>
-
-      {/* Featured Image */}
-      <div className="space-y-2">
-        <Label>Featured Image</Label>
-        <SingleImageUploader
-          value={formData.featured_image_url}
-          onChange={(url: string | null) =>
-            setFormData((prev) => ({ ...prev, featured_image_url: url || "" }))
-          }
-          bucket="GENERAL"
-          folder="homepage/restaurants"
-          aspectRatio="video"
-        />
-        <p className="text-xs text-muted-foreground">
-          Optional. Uses restaurant logo if not provided.
-        </p>
-      </div>
-
-      {/* Visibility Dates */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="start_date">
-            <Calendar className="mr-1 inline h-3 w-3" />
-            Start Date
-          </Label>
-          <Input
-            id="start_date"
-            type="date"
-            value={formData.start_date}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, start_date: e.target.value }))
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="end_date">
-            <Calendar className="mr-1 inline h-3 w-3" />
-            End Date
-          </Label>
-          <Input
-            id="end_date"
-            type="date"
-            value={formData.end_date}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, end_date: e.target.value }))
-            }
-          />
-        </div>
       </div>
 
       {/* Active Toggle */}
@@ -667,10 +581,9 @@ export function FeaturedRestaurantsManager() {
                   <div className="flex items-center gap-3 rounded-lg border border-border p-3 bg-card shadow-2xl ring-2 ring-primary rotate-2">
                     <GripVertical className="h-5 w-5 text-muted-foreground" />
                     <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted">
-                      {(activeItem.featured_image_url || activeItem.tenant?.logo_url) &&
-                      typeof (activeItem.featured_image_url || activeItem.tenant?.logo_url) === 'string' ? (
+                      {activeItem.tenant?.logo_url ? (
                         <img
-                          src={activeItem.featured_image_url || activeItem.tenant?.logo_url || ''}
+                          src={activeItem.tenant.logo_url}
                           alt=""
                           className="h-full w-full object-cover"
                         />

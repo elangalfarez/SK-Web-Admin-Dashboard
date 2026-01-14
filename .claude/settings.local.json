@@ -11,7 +11,14 @@
       "Bash(git push:*)",
       "Bash(git ls-tree:*)",
       "Bash(git commit:*)",
-      "Bash(if exist \".next\" rmdir /s /q \".next\")"
+      "Bash(if exist \".next\" rmdir /s /q \".next\")",
+      "Bash(cut:*)",
+      "Bash(psql:*)",
+      "Bash(if [ -z \"$DATABASE_URL\" ])",
+      "Bash(then echo \"ERROR: DATABASE_URL environment variable is not set\")",
+      "Bash(exit 1)",
+      "Bash(fi)",
+      "Bash(cat:*)"
     ]
   }
 }

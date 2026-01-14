@@ -81,9 +81,22 @@ export default function DashboardLayout({
 
         {/* Footer */}
         <footer className="border-t border-border px-4 py-4 lg:px-6">
-          <div className="flex flex-col items-center justify-between gap-2 text-sm text-muted-foreground sm:flex-row">
-            <p>© {new Date().getFullYear()} Supermal Karawaci. All rights reserved.</p>
-            <p>Admin Dashboard v1.0.0</p>
+          <div className="flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground">
+            <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-between sm:w-full">
+              <p>© {new Date().getFullYear()} Supermal Karawaci. All rights reserved.</p>
+              <p>Admin Dashboard v1.0.0</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span>Developed by:</span>
+              <a
+                href="https://algan.id"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold transition-colors hover:text-primary"
+              >
+                Elang Alfarez | Algan Studio
+              </a>
+            </div>
           </div>
         </footer>
       </div>

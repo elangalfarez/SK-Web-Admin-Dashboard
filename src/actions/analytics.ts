@@ -206,7 +206,7 @@ export async function getDashboardStats(): Promise<ActionResult<DashboardStats>>
       // Promotions
       supabase.from("promotions").select("id, status"),
       // Contacts
-      supabase.from("contacts").select("id, is_read"),
+      supabase.from("contacts").select("*"),
       // VIP Tiers
       supabase.from("vip_tiers").select("id, is_active"),
     ]);
@@ -233,7 +233,7 @@ export async function getDashboardStats(): Promise<ActionResult<DashboardStats>>
       totalPromotions: promotions.length,
       activePromotions: promotions.filter((p) => p.status === "published").length,
       totalContacts: contacts.length,
-      unreadContacts: contacts.filter((c) => !c.is_read).length,
+      unreadContacts: contacts.filter((c) => c.is_read !== true).length,
       totalVipTiers: vipTiers.length,
       activeVipTiers: vipTiers.filter((v) => v.is_active).length,
     };
@@ -276,7 +276,7 @@ export async function getContentOverview(): Promise<
     // Promotions
     const { data: promotions } = await supabase
       .from("promotions")
-      .select("id, status, valid_from, valid_to");
+      .select("id, status, start_date, end_date");
 
     // What's On
     const { data: whatsOn } = await supabase
@@ -332,15 +332,15 @@ export async function getContentOverview(): Promise<
         upcoming_count: (promotions || []).filter(
           (p) =>
             p.status === "published" &&
-            p.valid_from &&
-            new Date(p.valid_from) > new Date(now)
+            p.start_date &&
+            new Date(p.start_date) > new Date(now)
         ).length,
         ongoing_count: (promotions || []).filter(
           (p) =>
             p.status === "published" &&
-            p.valid_from &&
-            new Date(p.valid_from) <= new Date(now) &&
-            (!p.valid_to || new Date(p.valid_to) >= new Date(now))
+            p.start_date &&
+            new Date(p.start_date) <= new Date(now) &&
+            (!p.end_date || new Date(p.end_date) >= new Date(now))
         ).length,
         in_whats_on_count: activeWhatsOn.filter(
           (w) => w.content_type === "promotion"

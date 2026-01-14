@@ -11,6 +11,7 @@ import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils
 import { createPromotionSchema, updatePromotionSchema, type PromotionFilters } from "@/lib/validations/promotion";
 import type { ActionResult } from "@/lib/utils/api-helpers";
 import type { Promotion, PromotionWithTenant, Tenant, PaginatedResult } from "@/types/database";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 
 // ============================================================================
 // GET PROMOTIONS (with pagination and filters)
@@ -20,6 +21,21 @@ export async function getPromotions(
   filters: PromotionFilters = { page: 1, perPage: 10 }
 ): Promise<ActionResult<PaginatedResult<PromotionWithTenant>>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "promotions",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view promotions");
+    }
+
     const supabase = await createClient();
     const { page, perPage, search, status, tenantId, startDate, endDate, sortBy, sortOrder } = filters;
 
@@ -108,6 +124,21 @@ export async function getPromotions(
 
 export async function getPromotion(id: string): Promise<ActionResult<PromotionWithTenant>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "promotions",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view promotions");
+    }
+
     const supabase = await createClient();
 
     // Fetch promotion without join (no FK relationship exists)
@@ -154,6 +185,16 @@ export async function createPromotion(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "promotions",
+      "create"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to create promotions");
     }
 
     // Parse form data
@@ -237,6 +278,16 @@ export async function updatePromotion(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "promotions",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit promotions");
     }
 
     // Parse form data
@@ -333,6 +384,16 @@ export async function deletePromotion(id: string): Promise<ActionResult<void>> {
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "promotions",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete promotions");
+    }
+
     const supabase = await createAdminClient();
 
     // Get promotion before deletion for logging
@@ -386,6 +447,16 @@ export async function updatePromotionStatus(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "promotions",
+      "edit"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to edit promotions");
     }
 
     const supabase = await createAdminClient();

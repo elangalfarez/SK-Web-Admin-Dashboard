@@ -10,6 +10,7 @@ import { getCurrentSession } from "./auth";
 import { successResponse, errorResponse, handleSupabaseError } from "@/lib/utils/api-helpers";
 import type { ActionResult } from "@/lib/utils/api-helpers";
 import type { Contact, EnquiryType, PaginatedResult } from "@/types/database";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 
 // ============================================================================
 // TYPES
@@ -51,6 +52,21 @@ export async function getContacts(
   } = {}
 ): Promise<ActionResult<PaginatedResult<Contact>>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "contacts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view contact inquiries");
+    }
+
     const supabase = await createClient();
     const {
       page = 1,
@@ -127,6 +143,21 @@ export async function getContacts(
 
 export async function getContact(id: string): Promise<ActionResult<ContactWithResponse>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "contacts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view contact inquiries");
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -190,6 +221,16 @@ export async function markContactAsRead(id: string): Promise<ActionResult<Contac
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "contacts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to mark contact inquiries as read");
+    }
+
     const supabase = await createAdminClient();
 
     const { data, error } = await supabase
@@ -231,6 +272,16 @@ export async function markContactAsUnread(id: string): Promise<ActionResult<Cont
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "contacts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to mark contact inquiries as unread");
+    }
+
     const supabase = await createAdminClient();
 
     const { data, error } = await supabase
@@ -263,6 +314,16 @@ export async function markMultipleAsRead(ids: string[]): Promise<ActionResult<vo
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "contacts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to mark contact inquiries as read");
     }
 
     if (ids.length === 0) {
@@ -304,6 +365,16 @@ export async function deleteContact(id: string): Promise<ActionResult<void>> {
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "contacts",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete contact inquiries");
     }
 
     const supabase = await createAdminClient();
@@ -356,6 +427,16 @@ export async function deleteMultipleContacts(ids: string[]): Promise<ActionResul
       return errorResponse("Unauthorized");
     }
 
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "contacts",
+      "delete"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to delete contact inquiries");
+    }
+
     if (ids.length === 0) {
       return errorResponse("No contacts selected");
     }
@@ -392,6 +473,21 @@ export async function deleteMultipleContacts(ids: string[]): Promise<ActionResul
 
 export async function getContactStats(): Promise<ActionResult<ContactStats>> {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "contacts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to view contact statistics");
+    }
+
     const supabase = await createClient();
 
     // Get total count
@@ -461,6 +557,16 @@ export async function exportContacts(
     const session = await getCurrentSession();
     if (!session) {
       return errorResponse("Unauthorized");
+    }
+
+    // Check permission
+    const hasPermission = await checkUserPermission(
+      session.userId,
+      "contacts",
+      "view"
+    );
+    if (!hasPermission) {
+      return errorResponse("Forbidden: You don't have permission to export contact inquiries");
     }
 
     const supabase = await createClient();
