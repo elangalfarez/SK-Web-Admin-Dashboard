@@ -23,7 +23,6 @@ import type {
   PermissionCheck,
   UserRoleName,
   PermissionName,
-  UserRole,
 } from "@/types/auth";
 
 // ============================================================================

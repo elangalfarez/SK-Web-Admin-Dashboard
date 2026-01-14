@@ -47,7 +47,7 @@ export async function fetchUserWithPermissions(userId: string) {
     // Get permissions through roles
     const roleIds = roles.map((r) => r.id);
 
-    let permissionNames: string[] = [];
+    let permissionNames: PermissionName[] = [];
 
     if (roleIds.length > 0) {
       const { data: rolePermissions } = await supabase
