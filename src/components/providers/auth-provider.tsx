@@ -14,6 +14,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { fetchUserWithPermissions } from "@/actions/auth-user";
 import type {
   AuthUser,
   AuthContextValue,
@@ -45,81 +46,12 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
   const [isLoading, setIsLoading] = useState(!initialUser);
   const router = useRouter();
 
-  // Fetch user data from admin_users table
+  // Fetch user data from admin_users table using server action
   const fetchUser = useCallback(async (userId: string): Promise<AuthUser | null> => {
     try {
-      const supabase = createClient();
-
-      // Get user data
-      const { data: userData, error: userError } = await supabase
-        .from("admin_users")
-        .select("id, email, full_name, avatar_url, is_active, created_at, updated_at")
-        .eq("id", userId)
-        .eq("is_active", true)
-        .single();
-
-      if (userError || !userData) {
-        return null;
-      }
-
-      // Get user roles
-      const { data: userRoles } = await supabase
-        .from("admin_user_roles")
-        .select(`
-          role:admin_roles (
-            id,
-            name,
-            display_name,
-            description,
-            color
-          )
-        `)
-        .eq("user_id", userId);
-
-      const roles: UserRole[] = (userRoles || [])
-        .map((ur) => ur.role)
-        .filter((r): r is NonNullable<typeof r> => r !== null && !Array.isArray(r))
-        .map((r: any) => ({
-          id: r.id,
-          name: r.name as UserRoleName,
-          display_name: r.display_name,
-          description: r.description,
-          color: r.color,
-        }));
-
-      // Get permissions through roles
-      const roleIds = roles.map((r) => r.id);
-
-      let permissionNames = new Set<PermissionName>();
-
-      if (roleIds.length > 0) {
-        const { data: rolePermissions } = await supabase
-          .from("admin_role_permissions")
-          .select(`
-            permission:admin_permissions (
-              name
-            )
-          `)
-          .in("role_id", roleIds);
-
-        permissionNames = new Set<PermissionName>(
-          (rolePermissions || [])
-            .map((rp: any) => rp.permission?.name)
-            .filter((name): name is PermissionName => name !== null && name !== undefined)
-        );
-      }
-
-      return {
-        id: userData.id,
-        email: userData.email,
-        full_name: userData.full_name,
-        avatar_url: userData.avatar_url,
-        is_active: userData.is_active,
-        roles,
-        permissions: permissionNames,
-        created_at: userData.created_at,
-        updated_at: userData.updated_at,
-      };
+      // Use server action to bypass RLS and fetch with admin privileges
+      const userData = await fetchUserWithPermissions(userId);
+      return userData;
     } catch (error) {
       console.error("Fetch user error:", error);
       return null;

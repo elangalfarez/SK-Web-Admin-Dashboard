@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus, FolderOpen } from "lucide-react";
 import { PageHeader } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { TenantsTable } from "@/components/tenants/tenants-table";
 import { TenantsFilters } from "@/components/tenants/tenants-filters";
 import { getTenantsList } from "@/actions/tenants";
@@ -106,18 +107,22 @@ export default async function TenantsPage({
         description="Manage mall tenants and stores"
         actions={
           <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/tenants/categories">
-                <FolderOpen className="mr-2 h-4 w-4" />
-                Categories
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/tenants/create">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Tenant
-              </Link>
-            </Button>
+            <RequirePermission module="tenant_categories" action="view">
+              <Button variant="outline" asChild>
+                <Link href="/tenants/categories">
+                  <FolderOpen className="mr-2 h-4 w-4" />
+                  Categories
+                </Link>
+              </Button>
+            </RequirePermission>
+            <RequirePermission module="tenants" action="create">
+              <Button asChild>
+                <Link href="/tenants/create">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Tenant
+                </Link>
+              </Button>
+            </RequirePermission>
           </div>
         }
       />

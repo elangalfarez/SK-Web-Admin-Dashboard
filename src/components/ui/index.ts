@@ -4,6 +4,7 @@
 export { Button, buttonVariants, type ButtonProps } from "./button";
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "./card";
 export { Checkbox } from "./checkbox";
+export { RadioGroup, RadioGroupItem } from "./radio-group";
 export { Input, type InputProps } from "./input";
 export { Label } from "./label";
 export { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs";

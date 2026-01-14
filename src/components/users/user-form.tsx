@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DialogFooter } from "@/components/ui/dialog";
 import { SingleImageUploader } from "@/components/shared/image-uploader";
 import { createUser, updateUser, getRoles } from "@/actions/users";
@@ -33,7 +33,7 @@ interface FormData {
   full_name: string;
   avatar_url: string;
   is_active: boolean;
-  role_ids: string[];
+  role_id: string;
   send_invitation: boolean;
 }
 
@@ -53,7 +53,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         full_name: user.full_name,
         avatar_url: user.avatar_url || "",
         is_active: user.is_active,
-        role_ids: user.roles.map((r) => r.id),
+        role_id: user.roles[0]?.id || "",
         send_invitation: false,
       };
     }
@@ -62,7 +62,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       full_name: "",
       avatar_url: "",
       is_active: true,
-      role_ids: [],
+      role_id: "",
       send_invitation: true,
     };
   });
@@ -77,16 +77,6 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     });
   }, []);
 
-  // Handle role selection
-  const handleRoleChange = (roleId: string, checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      role_ids: checked
-        ? [...prev.role_ids, roleId]
-        : prev.role_ids.filter((id) => id !== roleId),
-    }));
-  };
-
   // Handle submit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +87,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       data.set("full_name", formData.full_name);
       data.set("avatar_url", formData.avatar_url);
       data.set("is_active", String(formData.is_active));
-      data.set("role_ids", JSON.stringify(formData.role_ids));
+      data.set("role_ids", JSON.stringify([formData.role_id]));
       data.set("send_invitation", String(formData.send_invitation));
 
       const result = user
@@ -181,45 +171,47 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             No roles available. Create roles first.
           </p>
         ) : (
-          <div className="rounded-lg border border-border p-3 space-y-2">
-            {roles.map((role) => {
-              const isSelected = formData.role_ids.includes(role.id);
-              return (
-                <label
-                  key={role.id}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-3 rounded-md p-2 transition-colors",
-                    isSelected ? "bg-primary/5" : "hover:bg-muted"
-                  )}
-                >
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={(checked) =>
-                      handleRoleChange(role.id, checked as boolean)
-                    }
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: role.color }}
-                      />
-                      <span className="font-medium">{role.display_name}</span>
-                    </div>
-                    {role.description && (
-                      <p className="text-xs text-muted-foreground">
-                        {role.description}
-                      </p>
+          <RadioGroup
+            value={formData.role_id}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, role_id: value }))
+            }
+          >
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              {roles.map((role) => {
+                const isSelected = formData.role_id === role.id;
+                return (
+                  <label
+                    key={role.id}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-md p-2 transition-colors",
+                      isSelected ? "bg-primary/5" : "hover:bg-muted"
                     )}
-                  </div>
-                </label>
-              );
-            })}
-          </div>
+                  >
+                    <RadioGroupItem value={role.id} />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: role.color }}
+                        />
+                        <span className="font-medium">{role.display_name}</span>
+                      </div>
+                      {role.description && (
+                        <p className="text-xs text-muted-foreground">
+                          {role.description}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </RadioGroup>
         )}
-        {formData.role_ids.length === 0 && (
+        {!formData.role_id && (
           <p className="text-xs text-destructive">
-            At least one role is required
+            Please select a role
           </p>
         )}
       </div>
@@ -268,7 +260,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         </Button>
         <Button
           type="submit"
-          disabled={isPending || formData.role_ids.length === 0}
+          disabled={isPending || !formData.role_id}
         >
           {isPending ? "Saving..." : isEditing ? "Update User" : "Create User"}
         </Button>

@@ -1,11 +1,13 @@
 // src/app/(dashboard)/tenants/[id]/edit/page.tsx
 // Created: Edit tenant page
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/header";
 import { TenantForm } from "@/components/tenants/tenant-form";
 import { getTenant } from "@/actions/tenants";
+import { getCurrentSession } from "@/actions/auth";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 
 // ============================================================================
 // METADATA
@@ -37,6 +39,21 @@ export default async function EditTenantPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await getCurrentSession();
+  if (!session) {
+    redirect("/login");
+  }
+
+  const hasPermission = await checkUserPermission(
+    session.userId,
+    "tenants",
+    "edit"
+  );
+
+  if (!hasPermission) {
+    redirect("/tenants");
+  }
+
   const { id } = await params;
   const result = await getTenant(id);
 

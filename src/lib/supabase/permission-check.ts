@@ -1,4 +1,4 @@
-import { createClient } from "./server";
+import { createAdminClient } from "./server";
 import type { PermissionModule, PermissionAction } from "@/types/auth";
 
 /**
@@ -11,7 +11,7 @@ export async function checkUserPermission(
   action: PermissionAction
 ): Promise<boolean> {
   try {
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
 
     // First check if user is super admin (bypass all permission checks)
     const { data: userRoles } = await supabase
@@ -121,7 +121,7 @@ export async function checkUserHasAllPermissions(
  */
 export async function getUserPermissions(userId: string): Promise<string[]> {
   try {
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
 
     const { data: permissions } = await supabase
       .from("admin_user_roles")

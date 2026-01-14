@@ -6,8 +6,12 @@ import Link from "next/link";
 import { Plus, Gift, Crown } from "lucide-react";
 import { PageHeader } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
-import { VipTierCard } from "@/components/vip/vip-tier-card";
+import { VipTiersList } from "@/components/vip/vip-tiers-list";
 import { getVipTiersWithBenefits } from "@/actions/vip";
+
+// Force dynamic rendering and no caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // ============================================================================
 // LOADING SKELETON
@@ -70,13 +74,7 @@ async function VipTiersContent() {
     );
   }
 
-  return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {tiers.map((tier) => (
-        <VipTierCard key={tier.id} tier={tier} />
-      ))}
-    </div>
-  );
+  return <VipTiersList tiers={tiers} />;
 }
 
 // ============================================================================

@@ -69,12 +69,18 @@ export function VipTierCard({ tier, expanded = false }: VipTierCardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showToggleDialog, setShowToggleDialog] = useState(false);
 
   const handleToggleStatus = () => {
+    setShowToggleDialog(true);
+  };
+
+  const handleConfirmToggle = () => {
     startTransition(async () => {
       const result = await toggleVipTierStatus(tier.id, !tier.is_active);
       if (result.success) {
         toast.success(result.message);
+        setShowToggleDialog(false);
         router.refresh();
       } else {
         toast.error(result.error);
@@ -269,7 +275,7 @@ export function VipTierCard({ tier, expanded = false }: VipTierCardProps) {
 
         {/* Status Indicator */}
         {!tier.is_active && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px]">
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] pointer-events-none">
             <Badge variant="inactive" className="text-sm">
               <PowerOff className="mr-1 h-3 w-3" />
               Inactive
@@ -278,14 +284,58 @@ export function VipTierCard({ tier, expanded = false }: VipTierCardProps) {
         )}
       </div>
 
+      {/* Toggle Status Confirmation Dialog */}
+      <Dialog open={showToggleDialog} onOpenChange={setShowToggleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {tier.is_active ? "Deactivate" : "Activate"} VIP Tier
+            </DialogTitle>
+            <DialogDescription>
+              {tier.is_active ? (
+                <>
+                  Are you sure you want to deactivate the "{tier.name}" tier?{" "}
+                  <strong>This will hide the tier from the VIP Cards page</strong> and prevent
+                  new members from registering for this tier. Existing members will retain their status.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to activate the "{tier.name}" tier?
+                  This will make the tier visible on the VIP Cards page and allow
+                  new members to register for this tier.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowToggleDialog(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmToggle}
+              disabled={isPending}
+            >
+              {isPending
+                ? (tier.is_active ? "Deactivating..." : "Activating...")
+                : (tier.is_active ? "Deactivate" : "Activate")
+              }
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete VIP Tier</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the "{tier.name}" tier? 
-              This will also remove all benefit assignments for this tier. 
+              Are you sure you want to delete the "{tier.name}" tier?
+              This will also remove all benefit assignments for this tier.
               This action cannot be undone.
             </DialogDescription>
           </DialogHeader>

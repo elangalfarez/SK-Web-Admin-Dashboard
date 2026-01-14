@@ -34,7 +34,8 @@ export async function getVipTiers(): Promise<ActionResult<VipTier[]>> {
       return errorResponse("Forbidden: You don't have permission to view VIP tiers");
     }
 
-    const supabase = await createClient();
+    // Use admin client to bypass RLS and see ALL tiers (including inactive)
+    const supabase = await createAdminClient();
 
     const { data, error } = await supabase
       .from("vip_tiers")
@@ -73,7 +74,8 @@ export async function getVipTier(id: string): Promise<ActionResult<VipTierWithBe
       return errorResponse("Forbidden: You don't have permission to view VIP tiers");
     }
 
-    const supabase = await createClient();
+    // Use admin client to bypass RLS and see ALL tiers (including inactive)
+    const supabase = await createAdminClient();
 
     // Get tier
     const { data: tier, error: tierError } = await supabase
@@ -141,9 +143,10 @@ export async function getVipTiersWithBenefits(): Promise<ActionResult<VipTierWit
       return errorResponse("Forbidden: You don't have permission to view VIP tiers");
     }
 
-    const supabase = await createClient();
+    // Use admin client to bypass RLS and see ALL tiers (including inactive)
+    const supabase = await createAdminClient();
 
-    // Get all tiers
+    // Get all tiers (including inactive ones for admin view)
     const { data: tiers, error: tiersError } = await supabase
       .from("vip_tiers")
       .select("*")
