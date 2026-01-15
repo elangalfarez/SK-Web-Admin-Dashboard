@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { getTenant } from "@/actions/tenants";
 import { getPromotions } from "@/actions/promotions";
 import { formatRelativeDate } from "@/lib/utils/format-date";
@@ -139,12 +140,14 @@ export default async function TenantDetailPage({
             </div>
           </div>
         </div>
-        <Button asChild>
-          <Link href={`/tenants/${id}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit Tenant
-          </Link>
-        </Button>
+        <RequirePermission module="tenants" action="edit">
+          <Button asChild>
+            <Link href={`/tenants/${id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Tenant
+            </Link>
+          </Button>
+        </RequirePermission>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

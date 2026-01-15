@@ -1,11 +1,13 @@
 // src/app/(dashboard)/promotions/[id]/edit/page.tsx
 // Created: Edit promotion page
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/header";
 import { PromotionForm } from "@/components/promotions/promotion-form";
 import { getPromotion } from "@/actions/promotions";
+import { getCurrentSession } from "@/actions/auth";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 
 // ============================================================================
 // METADATA
@@ -37,6 +39,21 @@ export default async function EditPromotionPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await getCurrentSession();
+  if (!session) {
+    redirect("/login");
+  }
+
+  const hasPermission = await checkUserPermission(
+    session.userId,
+    "promotions",
+    "edit"
+  );
+
+  if (!hasPermission) {
+    redirect("/promotions");
+  }
+
   const { id } = await params;
   const result = await getPromotion(id);
 

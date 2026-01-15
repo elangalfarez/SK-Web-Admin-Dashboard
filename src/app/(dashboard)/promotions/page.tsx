@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { PromotionsTable } from "@/components/promotions/promotions-table";
 import { PromotionsFilters } from "@/components/promotions/promotions-filters";
 import { getPromotions } from "@/actions/promotions";
@@ -99,12 +100,14 @@ export default async function PromotionsPage({
         title="Promotions"
         description="Manage tenant promotions and offers"
         actions={
-          <Button asChild>
-            <Link href="/promotions/create">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Promotion
-            </Link>
-          </Button>
+          <RequirePermission module="promotions" action="create">
+            <Button asChild>
+              <Link href="/promotions/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Promotion
+              </Link>
+            </Button>
+          </RequirePermission>
         }
       />
 

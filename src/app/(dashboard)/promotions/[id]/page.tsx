@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { getPromotion } from "@/actions/promotions";
 import { formatDisplayDate, formatRelativeDate, getPromotionDateStatus } from "@/lib/utils/format-date";
 import type { PromotionStatus } from "@/types/database";
@@ -107,12 +108,14 @@ export default async function PromotionDetailPage({
             </div>
           </div>
         </div>
-        <Button asChild>
-          <Link href={`/promotions/${id}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit Promotion
-          </Link>
-        </Button>
+        <RequirePermission module="promotions" action="edit">
+          <Button asChild>
+            <Link href={`/promotions/${id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Promotion
+            </Link>
+          </Button>
+        </RequirePermission>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

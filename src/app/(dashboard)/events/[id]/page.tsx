@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { getEvent } from "@/actions/events";
 import { getDateStatus } from "@/lib/utils/format-date";
 import { formatInJakartaTime } from "@/lib/utils/timezone";
@@ -98,12 +99,14 @@ export default async function EventDetailPage({
             </div>
           </div>
         </div>
-        <Button asChild>
-          <Link href={`/events/${id}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit Event
-          </Link>
-        </Button>
+        <RequirePermission module="events" action="edit">
+          <Button asChild>
+            <Link href={`/events/${id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Event
+            </Link>
+          </Button>
+        </RequirePermission>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

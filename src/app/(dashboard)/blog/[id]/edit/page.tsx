@@ -1,11 +1,13 @@
 // src/app/(dashboard)/blog/[id]/edit/page.tsx
 // Created: Edit blog post page
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/header";
 import { BlogPostForm } from "@/components/blog/blog-post-form";
 import { getPost } from "@/actions/blog";
+import { getCurrentSession } from "@/actions/auth";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 
 // ============================================================================
 // METADATA
@@ -37,6 +39,21 @@ export default async function EditPostPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await getCurrentSession();
+  if (!session) {
+    redirect("/login");
+  }
+
+  const hasPermission = await checkUserPermission(
+    session.userId,
+    "posts",
+    "edit"
+  );
+
+  if (!hasPermission) {
+    redirect("/blog");
+  }
+
   const { id } = await params;
   const result = await getPost(id);
 

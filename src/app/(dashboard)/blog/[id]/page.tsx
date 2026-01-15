@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { getPost } from "@/actions/blog";
 import { formatDisplayDateTime, formatRelativeDate } from "@/lib/utils/format-date";
 
@@ -107,12 +108,14 @@ export default async function PostDetailPage({
             </div>
           </div>
         </div>
-        <Button asChild>
-          <Link href={`/blog/${id}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit Post
-          </Link>
-        </Button>
+        <RequirePermission module="posts" action="edit">
+          <Button asChild>
+            <Link href={`/blog/${id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Post
+            </Link>
+          </Button>
+        </RequirePermission>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

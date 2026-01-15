@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { VipTierBenefitsEditor } from "@/components/vip/vip-tier-benefits-editor";
 import { getVipTier } from "@/actions/vip";
 import { formatRelativeDate } from "@/lib/utils/format-date";
@@ -126,12 +127,14 @@ export default async function VipTierDetailPage({
             </div>
           </div>
         </div>
-        <Button asChild>
-          <Link href={`/vip/tiers/${id}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit Tier
-          </Link>
-        </Button>
+        <RequirePermission module="dashboard" action="edit">
+          <Button asChild>
+            <Link href={`/vip/tiers/${id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Tier
+            </Link>
+          </Button>
+        </RequirePermission>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

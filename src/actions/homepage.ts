@@ -29,6 +29,7 @@ export interface WhatsOnResolved extends WhatsOn {
     name?: string;
     image_url?: string;
     logo_url?: string;
+    banner_url?: string;
   } | null;
 }
 
@@ -81,7 +82,7 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
           const selectCols = item.content_type === "event"
             ? "id, title, images"
             : item.content_type === "tenant"
-            ? "id, name, logo_url"
+            ? "id, name, logo_url, banner_url"
             : "id, title, image_url";
 
           const { data: refData } = await supabase
@@ -97,7 +98,10 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
 
             // Safely extract image URL - ensure it's always a string or null
             let imageUrl = null;
-            if (data.image_url && typeof data.image_url === 'string') {
+            if (data.banner_url && typeof data.banner_url === 'string') {
+              // Prefer banner_url for tenants as it's better for featured/showcase sections
+              imageUrl = data.banner_url;
+            } else if (data.image_url && typeof data.image_url === 'string') {
               imageUrl = data.image_url;
             } else if (data.logo_url && typeof data.logo_url === 'string') {
               imageUrl = data.logo_url;
@@ -115,6 +119,7 @@ export async function getWhatsOnItems(): Promise<ActionResult<WhatsOnResolved[]>
               name: data.name,
               image_url: imageUrl,
               logo_url: data.logo_url,
+              banner_url: data.banner_url,
             };
           }
         }
@@ -1160,7 +1165,7 @@ export async function getReferenceOptions(
       case "tenant":
         query = supabase
           .from("tenants")
-          .select("id, name, logo_url")
+          .select("id, name, logo_url, banner_url")
           .eq("is_active", true)
           .order("name", { ascending: true});
 
@@ -1213,7 +1218,10 @@ export async function getReferenceOptions(
       // Extract image URL based on content type
       let imageUrl = null;
 
-      if (item.image_url && typeof item.image_url === 'string') {
+      if (item.banner_url && typeof item.banner_url === 'string') {
+        // Prefer banner_url for tenants as it's better for featured/showcase sections
+        imageUrl = item.banner_url;
+      } else if (item.image_url && typeof item.image_url === 'string') {
         imageUrl = item.image_url;
       } else if (item.logo_url && typeof item.logo_url === 'string') {
         imageUrl = item.logo_url;

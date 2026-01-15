@@ -1,11 +1,13 @@
 // src/app/(dashboard)/vip/tiers/[id]/edit/page.tsx
 // Created: Edit VIP tier page
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/header";
 import { VipTierForm } from "@/components/vip/vip-tier-form";
 import { getVipTier } from "@/actions/vip";
+import { getCurrentSession } from "@/actions/auth";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 
 // ============================================================================
 // METADATA
@@ -37,6 +39,21 @@ export default async function EditVipTierPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await getCurrentSession();
+  if (!session) {
+    redirect("/login");
+  }
+
+  const hasPermission = await checkUserPermission(
+    session.userId,
+    "dashboard",
+    "edit"
+  );
+
+  if (!hasPermission) {
+    redirect("/vip");
+  }
+
   const { id } = await params;
   const result = await getVipTier(id);
 

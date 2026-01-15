@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus, FolderOpen } from "lucide-react";
 import { PageHeader } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { BlogTable } from "@/components/blog/blog-table";
 import { BlogFilters } from "@/components/blog/blog-filters";
 import { getPosts } from "@/actions/blog";
@@ -106,18 +107,22 @@ export default async function BlogPage({
         description="Manage blog posts and articles"
         actions={
           <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/blog/categories">
-                <FolderOpen className="mr-2 h-4 w-4" />
-                Categories
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/blog/create">
-                <Plus className="mr-2 h-4 w-4" />
-                New Post
-              </Link>
-            </Button>
+            <RequirePermission module="posts" action="view">
+              <Button variant="outline" asChild>
+                <Link href="/blog/categories">
+                  <FolderOpen className="mr-2 h-4 w-4" />
+                  Categories
+                </Link>
+              </Button>
+            </RequirePermission>
+            <RequirePermission module="posts" action="create">
+              <Button asChild>
+                <Link href="/blog/create">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Post
+                </Link>
+              </Button>
+            </RequirePermission>
           </div>
         }
       />

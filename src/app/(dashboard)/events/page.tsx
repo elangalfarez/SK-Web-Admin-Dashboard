@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { EventsTable } from "@/components/events/events-table";
 import { EventsFilters } from "@/components/events/events-filters";
 import { getEvents } from "@/actions/events";
@@ -99,12 +100,14 @@ export default async function EventsPage({
         title="Events"
         description="Manage mall events, exhibitions, and activities"
         actions={
-          <Button asChild>
-            <Link href="/events/create">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Event
-            </Link>
-          </Button>
+          <RequirePermission module="events" action="create">
+            <Button asChild>
+              <Link href="/events/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Event
+              </Link>
+            </Button>
+          </RequirePermission>
         }
       />
 

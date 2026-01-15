@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus, Gift, Crown } from "lucide-react";
 import { PageHeader } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import { VipTiersList } from "@/components/vip/vip-tiers-list";
 import { getVipTiersWithBenefits } from "@/actions/vip";
 
@@ -64,12 +65,14 @@ async function VipTiersContent() {
         <p className="mt-2 text-sm text-muted-foreground">
           Create your first VIP tier to start building your loyalty program.
         </p>
-        <Button asChild className="mt-4">
-          <Link href="/vip/tiers/create">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Tier
-          </Link>
-        </Button>
+        <RequirePermission module="dashboard" action="create">
+          <Button asChild className="mt-4">
+            <Link href="/vip/tiers/create">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Tier
+            </Link>
+          </Button>
+        </RequirePermission>
       </div>
     );
   }
@@ -89,18 +92,22 @@ export default function VipPage() {
         description="Manage VIP tiers and member benefits"
         actions={
           <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/vip/benefits">
-                <Gift className="mr-2 h-4 w-4" />
-                Benefits Library
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/vip/tiers/create">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Tier
-              </Link>
-            </Button>
+            <RequirePermission module="dashboard" action="view">
+              <Button variant="outline" asChild>
+                <Link href="/vip/benefits">
+                  <Gift className="mr-2 h-4 w-4" />
+                  Benefits Library
+                </Link>
+              </Button>
+            </RequirePermission>
+            <RequirePermission module="dashboard" action="create">
+              <Button asChild>
+                <Link href="/vip/tiers/create">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Tier
+                </Link>
+              </Button>
+            </RequirePermission>
           </div>
         }
       />

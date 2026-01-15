@@ -6,6 +6,8 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import {
   Crown,
   Pencil,
@@ -168,34 +170,40 @@ export function VipTierCard({ tier, expanded = false }: VipTierCardProps) {
                   View Details
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/vip/tiers/${tier.id}/edit`}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit Tier
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleToggleStatus}>
-                {tier.is_active ? (
-                  <>
-                    <PowerOff className="mr-2 h-4 w-4" />
-                    Deactivate
-                  </>
-                ) : (
-                  <>
-                    <Power className="mr-2 h-4 w-4" />
-                    Activate
-                  </>
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => setShowDeleteDialog(true)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              <RequirePermission module="dashboard" action="edit">
+                <DropdownMenuItem asChild>
+                  <Link href={`/vip/tiers/${tier.id}/edit`}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit Tier
+                  </Link>
+                </DropdownMenuItem>
+              </RequirePermission>
+              <RequirePermission module="dashboard" action="edit">
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleToggleStatus}>
+                  {tier.is_active ? (
+                    <>
+                      <PowerOff className="mr-2 h-4 w-4" />
+                      Deactivate
+                    </>
+                  ) : (
+                    <>
+                      <Power className="mr-2 h-4 w-4" />
+                      Activate
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </RequirePermission>
+              <RequirePermission module="dashboard" action="delete">
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </RequirePermission>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

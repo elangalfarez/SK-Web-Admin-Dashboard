@@ -1,11 +1,13 @@
 // src/app/(dashboard)/events/[id]/edit/page.tsx
 // Created: Edit event page
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/header";
 import { EventForm } from "@/components/events/event-form";
 import { getEvent } from "@/actions/events";
+import { getCurrentSession } from "@/actions/auth";
+import { checkUserPermission } from "@/lib/supabase/permission-check";
 
 // ============================================================================
 // METADATA
@@ -37,6 +39,21 @@ export default async function EditEventPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await getCurrentSession();
+  if (!session) {
+    redirect("/login");
+  }
+
+  const hasPermission = await checkUserPermission(
+    session.userId,
+    "events",
+    "edit"
+  );
+
+  if (!hasPermission) {
+    redirect("/events");
+  }
+
   const { id } = await params;
   const result = await getEvent(id);
 

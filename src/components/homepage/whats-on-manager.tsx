@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { RequirePermission } from "@/components/providers/auth-provider";
 import {
   DndContext,
   closestCenter,
@@ -138,6 +140,9 @@ function SortableItem({
   onEdit,
   onDelete,
 }: SortableItemProps) {
+  const { hasPermission } = useAuth();
+  const canEdit = hasPermission("whats_on", "edit");
+
   const {
     attributes,
     listeners,
@@ -161,6 +166,7 @@ function SortableItem({
   const image =
     item.custom_image_url ||
     item.reference_data?.image_url ||
+    item.reference_data?.banner_url ||
     item.reference_data?.logo_url;
 
   return (
@@ -174,17 +180,23 @@ function SortableItem({
       )}
     >
       {/* Drag Handle */}
-      <div
-        {...attributes}
-        {...listeners}
-        className={cn(
-          "flex items-center justify-center cursor-grab active:cursor-grabbing",
-          "hover:bg-muted rounded p-2 transition-colors",
-          isPending && "cursor-not-allowed opacity-50"
-        )}
-      >
-        <GripVertical className="h-5 w-5 text-muted-foreground" />
-      </div>
+      {canEdit ? (
+        <div
+          {...attributes}
+          {...listeners}
+          className={cn(
+            "flex items-center justify-center cursor-grab active:cursor-grabbing",
+            "hover:bg-muted rounded p-2 transition-colors",
+            isPending && "cursor-not-allowed opacity-50"
+          )}
+        >
+          <GripVertical className="h-5 w-5 text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="flex items-center justify-center p-2 opacity-30">
+          <GripVertical className="h-5 w-5 text-muted-foreground" />
+        </div>
+      )}
 
       {/* Image */}
       <div className="h-16 w-24 shrink-0 overflow-hidden rounded-md bg-muted">
@@ -231,32 +243,38 @@ function SortableItem({
 
       {/* Actions */}
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => onToggleStatus(item)}
-          disabled={isPending}
-        >
-          {item.is_active ? (
-            <PowerOff className="h-4 w-4" />
-          ) : (
-            <Power className="h-4 w-4" />
-          )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => onEdit(item)}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => onDelete(item)}
-        >
-          <Trash2 className="h-4 w-4 text-destructive" />
-        </Button>
+        <RequirePermission module="whats_on" action="edit">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onToggleStatus(item)}
+            disabled={isPending}
+          >
+            {item.is_active ? (
+              <PowerOff className="h-4 w-4" />
+            ) : (
+              <Power className="h-4 w-4" />
+            )}
+          </Button>
+        </RequirePermission>
+        <RequirePermission module="whats_on" action="edit">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onEdit(item)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </RequirePermission>
+        <RequirePermission module="whats_on" action="edit">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onDelete(item)}
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </RequirePermission>
       </div>
     </div>
   );
@@ -764,10 +782,12 @@ export function WhatsOnManager() {
               Manage homepage featured content (max 6 items recommended) - Drag to reorder
             </CardDescription>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Item
-          </Button>
+          <RequirePermission module="whats_on" action="edit">
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Item
+            </Button>
+          </RequirePermission>
         </CardHeader>
         <CardContent>
           {items.length === 0 ? (
@@ -811,14 +831,17 @@ export function WhatsOnManager() {
                     <div className="h-16 w-24 shrink-0 overflow-hidden rounded-md bg-muted">
                       {(activeItem.custom_image_url ||
                         activeItem.reference_data?.image_url ||
+                        activeItem.reference_data?.banner_url ||
                         activeItem.reference_data?.logo_url) &&
                       typeof (activeItem.custom_image_url ||
                         activeItem.reference_data?.image_url ||
+                        activeItem.reference_data?.banner_url ||
                         activeItem.reference_data?.logo_url) === 'string' ? (
                         <img
                           src={
                             activeItem.custom_image_url ||
                             activeItem.reference_data?.image_url ||
+                            activeItem.reference_data?.banner_url ||
                             activeItem.reference_data?.logo_url ||
                             ''
                           }
