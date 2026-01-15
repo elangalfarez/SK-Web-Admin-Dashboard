@@ -1,22 +1,26 @@
 # Project Summary - Supermal Karawaci Admin Dashboard
 
+> **Note**: For AI assistant guidance, see [CLAUDE.md](CLAUDE.md) which contains architecture patterns and development guidelines.
+
 ## 📊 Project Statistics
 
 | Metric | Value |
 |--------|-------|
-| Total Files | 168 TypeScript/TSX files |
-| Total Lines of Code | ~22,000+ lines |
-| Components | 80+ React components |
-| Server Actions | 100+ server functions |
-| Pages/Routes | 40+ routes |
-| Development Time | 15 AI-assisted sessions |
+| **Total Files** | 177 TypeScript/TSX files |
+| **Total Lines of Code** | 37,441 lines |
+| **Components** | 82 React components |
+| **Server Actions** | 12 action files (8,879 lines) |
+| **Pages/Routes** | 40 pages (39 dashboard + 1 auth) |
+| **Library Files** | 29 utilities + 11 validation schemas |
+| **Framework** | Next.js 15 (App Router) |
+| **Development Time** | 15 AI-assisted sessions |
 
 ## 🏗 Architecture Overview
 
 ### Frontend Architecture
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Next.js 14 App Router                     │
+│                    Next.js 15 App Router                     │
 ├─────────────────────────────────────────────────────────────┤
 │  (auth)                    │  (dashboard)                   │
 │  └── login/               │  ├── events/                   │
@@ -59,135 +63,108 @@ User Action → Server Action → Supabase → Response → UI Update
 ### Actions (`src/actions/`)
 | File | Lines | Description |
 |------|-------|-------------|
-| `auth.ts` | ~300 | Authentication (login, logout, session) |
-| `analytics.ts` | ~500 | Dashboard stats, activity logs |
-| `blog.ts` | ~800 | Blog CRUD, categories |
-| `contacts.ts` | ~400 | Contact submissions |
-| `events.ts` | ~600 | Events CRUD |
-| `homepage.ts` | ~900 | What's On, Featured Restaurants |
-| `promotions.ts` | ~500 | Promotions CRUD |
-| `settings.ts` | ~700 | Site settings management |
-| `tenants.ts` | ~700 | Tenants CRUD, categories |
-| `users.ts` | ~1100 | Users, roles, permissions |
-| `vip.ts` | ~800 | VIP tiers, benefits |
+| `auth.ts` | 267 | Authentication (login, logout, session) |
+| `auth-user.ts` | 82 | User authentication helpers |
+| `analytics.ts` | 544 | Dashboard stats, activity logs |
+| `blog.ts` | 967 | Blog CRUD, categories |
+| `contacts.ts` | 616 | Contact submissions |
+| `events.ts` | 647 | Events CRUD |
+| `homepage.ts` | 1,305 | What's On, Featured Restaurants |
+| `promotions.ts` | 605 | Promotions CRUD |
+| `settings.ts` | 770 | Site settings management |
+| `tenants.ts` | 1,022 | Tenants CRUD, categories |
+| `users.ts` | 1,207 | Users, roles, permissions |
+| `vip.ts` | 847 | VIP tiers, benefits |
+| **Total** | **8,879 lines** | **12 server action files** |
 
 ### Components (`src/components/`)
 
-#### UI Primitives (`ui/`)
-- `button.tsx` - Button variants
-- `card.tsx` - Card container
-- `dialog.tsx` - Modal dialogs
-- `dropdown-menu.tsx` - Dropdown menus
-- `input.tsx` - Form inputs
-- `label.tsx` - Form labels
-- `select.tsx` - Select dropdowns
-- `switch.tsx` - Toggle switches
-- `tabs.tsx` - Tab navigation
-- `textarea.tsx` - Text areas
-- `badge.tsx` - Status badges
-- `checkbox.tsx` - Checkboxes
-- `tooltip.tsx` - Tooltips
-- `skeleton.tsx` - Loading skeletons
+**Total: 82 component files across 14 feature categories**
 
-#### Shared Components (`shared/`)
+| Category | Files | Description |
+|----------|-------|-------------|
+| **UI Primitives** | 16 | Radix-based components (button, dialog, input, etc.) |
+| **Activity** | 7 | Activity logs and audit trail components |
+| **Blog** | 5 | Blog/post management components |
+| **Contacts** | 4 | Contact form submission components |
+| **Events** | 4 | Event management components |
+| **Homepage** | 4 | Homepage content management |
+| **Layout** | 3 | Sidebar, header, page layouts |
+| **Promotions** | 4 | Promotion management components |
+| **Providers** | 3 | Context providers (theme, etc.) |
+| **Settings** | 8 | Site settings components |
+| **Shared** | 4 | Reusable widgets (uploader, editor, etc.) |
+| **Tenants** | 6 | Tenant directory components |
+| **Users** | 8 | User & permission management |
+| **VIP** | 6 | VIP card system components |
+
+#### Key Shared Widgets
 - `image-uploader.tsx` - Drag-drop image upload
-- `rich-text-editor.tsx` - TipTap editor
-- `date-picker.tsx` - Date selection
-- `color-picker.tsx` - Color selection
-- `slug-input.tsx` - Auto-slug generation
-- `status-badge.tsx` - Status indicators
-- `empty-state.tsx` - Empty state display
-- `data-table.tsx` - Reusable data table
-- `pagination.tsx` - Pagination controls
-- `search-input.tsx` - Search with debounce
+- `rich-text-editor.tsx` - TipTap WYSIWYG editor
+- `data-table.tsx` - Reusable table with sorting/filtering
 - `confirm-dialog.tsx` - Confirmation modals
-
-#### Layout (`layout/`)
-- `sidebar.tsx` - Collapsible sidebar
-- `header.tsx` - Top header with breadcrumbs
-- `page-header.tsx` - Page title component
-- `dashboard-shell.tsx` - Dashboard wrapper
-
-#### Feature Components
-Each feature has its own folder with:
-- List/Table component
-- Form component (create/edit)
-- Filters component
-- Detail view component
-- Manager component (for complex features)
 
 ### Pages (`src/app/`)
 
-#### Auth Routes
-- `/login` - Login page
+**Total: 40 pages (39 dashboard + 1 auth)**
 
-#### Dashboard Routes
-| Route | Page | Features |
-|-------|------|----------|
-| `/` | Dashboard | Stats, charts, recent activity |
-| `/events` | Events list | Pagination, filters, CRUD |
-| `/events/create` | Create event | Full form with editor |
-| `/events/[id]` | Event detail | View details |
-| `/events/[id]/edit` | Edit event | Edit form |
-| `/tenants` | Tenants list | Categories, filters |
-| `/tenants/create` | Create tenant | Full form |
-| `/tenants/categories` | Categories | Category management |
-| `/blog` | Blog list | Posts, categories |
-| `/blog/create` | Create post | Rich editor |
-| `/blog/categories` | Categories | Category CRUD |
-| `/promotions` | Promotions | Status filters |
-| `/promotions/create` | Create promo | Form |
-| `/homepage` | Overview | Stats, previews |
-| `/homepage/whats-on` | What's On | 5 content types |
-| `/homepage/restaurants` | Restaurants | F&B features |
-| `/contacts` | Contacts | Submissions list |
-| `/contacts/[id]` | Detail | Full submission |
-| `/vip` | Overview | Tiers, benefits |
-| `/vip/tiers` | Tiers | Tier management |
-| `/vip/benefits` | Benefits | Benefits library |
-| `/users` | Users | Admin users |
-| `/users/roles` | Roles | Role permissions |
-| `/activity` | Logs | Activity tracking |
-| `/settings` | General | Site identity |
-| `/settings/profile` | Profile | Own profile |
-| `/settings/contact` | Contact | Contact info |
-| `/settings/social` | Social | Social links |
-| `/settings/seo` | SEO | Meta, OG, Twitter |
-| `/settings/analytics` | Analytics | GA4, GTM, pixels |
-| `/settings/scripts` | Scripts | Custom code |
+#### Auth Routes (1 page)
+| Route | Description |
+|-------|-------------|
+| `/login` | Admin login page |
+
+#### Dashboard Routes (39 pages)
+| Module | Pages | Routes |
+|--------|-------|--------|
+| **Dashboard** | 1 | `/` (overview with stats) |
+| **Events** | 4 | List, create, detail `[id]`, edit `[id]/edit` |
+| **Tenants** | 5 | List, create, detail `[id]`, edit `[id]/edit`, categories |
+| **Blog** | 5 | List, create, detail `[id]`, edit `[id]/edit`, categories |
+| **Promotions** | 4 | List, create, detail `[id]`, edit `[id]/edit` |
+| **Homepage** | 3 | Overview, What's On, Featured Restaurants |
+| **Contacts** | 2 | List, detail `[id]` |
+| **VIP** | 5 | Overview, benefits, tier create, detail `[id]`, edit `[id]/edit` |
+| **Users** | 2 | List, roles & permissions |
+| **Activity** | 1 | Activity logs |
+| **Settings** | 7 | General, profile, contact, social, SEO, analytics, scripts |
+
+**Note:** The app includes 4 layout files (main dashboard, homepage section, settings section, users section) for nested layouts.
 
 ### Library (`src/lib/`)
 
-#### Constants (`constants/`)
-- `index.ts` - App constants, navigation
+**Total: 29 utility files + 11 validation schemas**
 
 #### Supabase (`supabase/`)
-- `client.ts` - Browser client
-- `server.ts` - Server client
-- `auth.ts` - Auth helpers
-- `admin.ts` - Admin client
+- `client.ts` - Browser client for client components
+- `server.ts` - Server client for Server Components/Actions
+- `middleware.ts` - Middleware client for route protection
+- `auth.ts` - Authentication helpers
+- `storage.ts` - File upload helpers
+- `permission-check.ts` - Permission validation utilities
+- `index.ts` - Exports
+
+#### Validations (`validations/`) - 11 Zod schemas
+- `activity.ts` - Activity log schemas
+- `blog.ts` - Blog/post schemas
+- `contact.ts` - Contact form schemas
+- `event.ts` - Event schemas
+- `homepage.ts` - Homepage content schemas
+- `promotion.ts` - Promotion schemas
+- `settings.ts` - Site settings schemas
+- `tenant.ts` - Tenant schemas
+- `user.ts` - User/role/permission schemas
+- `vip.ts` - VIP tier/benefit schemas
+- `auth.ts` - Authentication schemas
 
 #### Utils (`utils/`)
-- `cn.ts` - Class name merger
-- `api-helpers.ts` - Response helpers
-- `format-date.ts` - Date formatting
-- `format-currency.ts` - Currency formatting
-- `slugify.ts` - Slug generation
+- API helpers, formatting, slug generation, class name utilities
 
-#### Validations (`validations/`)
-- `event.ts` - Event schemas
-- `blog.ts` - Blog schemas
-- `promotion.ts` - Promotion schemas
-- `tenant.ts` - Tenant schemas
-- `vip.ts` - VIP schemas
-- `contact.ts` - Contact schemas
-- `settings.ts` - Settings schemas
-- `homepage.ts` - Homepage schemas
-- `activity.ts` - Activity schemas
-- `user.ts` - User schemas
+#### Constants (`constants/`)
+- Navigation items, app configuration, enums
 
 ### Types (`src/types/`)
-- `database.ts` - All TypeScript interfaces (~600 lines)
+- `database.ts` - TypeScript interfaces for all DB tables
+- `auth.ts` - Authentication types
 
 ## 🎨 Design System
 
@@ -291,6 +268,12 @@ Each feature has its own folder with:
 6. **Real-time Updates** - Supabase subscriptions
 7. **Mobile App** - React Native companion
 8. **Multi-language** - i18n support
+
+## 📚 Related Documentation
+
+- **[README.md](README.md)** - Setup instructions and quick start guide
+- **[CLAUDE.md](CLAUDE.md)** - AI assistant guidance with architecture patterns
+- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - This file (detailed project overview)
 
 ## 🙏 Credits
 

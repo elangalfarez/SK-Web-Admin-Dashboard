@@ -18,7 +18,15 @@
       "Bash(then echo \"ERROR: DATABASE_URL environment variable is not set\")",
       "Bash(exit 1)",
       "Bash(fi)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(nul)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(find:*)",
+      "Bash(for dir in \"c:\\Users\\aphe\\SK-Web-Admin-Dashboard\\src\\components\"/*)",
+      "Bash(do if [ -d \"$dir\" ])",
+      "Bash(done)",
+      "Bash(for file in \"c:\\Users\\aphe\\SK-Web-Admin-Dashboard\\src\\actions\"/*.ts)"
     ]
   }
 }

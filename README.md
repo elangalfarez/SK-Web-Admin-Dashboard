@@ -1,6 +1,8 @@
 # Supermal Karawaci Admin Dashboard
 
-A production-ready, world-class admin dashboard for Supermal Karawaci mall website built with Next.js 14, TypeScript, Tailwind CSS, and Supabase.
+A production-ready, world-class admin dashboard for Supermal Karawaci mall website built with Next.js 15, TypeScript, Tailwind CSS, and Supabase.
+
+> **For AI Assistants**: See [CLAUDE.md](CLAUDE.md) for architecture patterns, development guidelines, and codebase guidance.
 
 ## 🚀 Features
 
@@ -92,7 +94,7 @@ supermal-admin/
 
 ## 🛠 Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS with CSS Variables
 - **Database**: Supabase (PostgreSQL)
@@ -301,6 +303,12 @@ The project uses semantic design tokens defined in CSS variables:
 npm run build
 npm start
 ```
+
+## 📚 Documentation
+
+- **[README.md](README.md)**: General overview and setup instructions (this file)
+- **[CLAUDE.md](CLAUDE.md)**: AI assistant guidance with architecture patterns and development guidelines
+- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)**: Detailed project statistics, file structure, and technical documentation
 
 ## 📝 License
 
