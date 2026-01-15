@@ -6,7 +6,6 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/hooks/use-auth";
 import { RequirePermission } from "@/components/providers/auth-provider";
 import {
   Crown,
